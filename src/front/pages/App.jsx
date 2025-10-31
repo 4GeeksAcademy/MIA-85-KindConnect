@@ -10,7 +10,7 @@ import NotFound from './NotFound'
 export default function App() {
     return (
         <div>
-            <nav className="navbar navbar-expand-lg bg-light border-bottom">
+            {/* <nav className="navbar navbar-expand-lg bg-light border-bottom">
                 <div className="container">
                     <Link to="/" className="navbar-brand fw-bold">KindConnect</Link>
                     <div className="navbar-nav">
@@ -18,8 +18,9 @@ export default function App() {
                         <Link to="/food/new" className="nav-link">Post a Need</Link>
                     </div>
                 </div>
-            </nav>
-            <Routes>
+            </nav> */}
+            <h1>Hello Friend</h1>
+            {/* <Routes>
                 <Route path="/" element={<div className="container py-5"><h1 className="display-6">Welcome to KindConnect</h1><p className="lead">Where food, animal, and home projects get done — for free, by volunteers.</p></div>} />
                 <Route path="/food" element={<FoodHub />}>
                     <Route index element={<Navigate to="needs" replace />} />
@@ -29,7 +30,7 @@ export default function App() {
                 <Route path="/food/new" element={<CreateProjectForm />} />
                 <Route path="/projects/:id" element={<ProjectDetails />} />
                 <Route path="*" element={<NotFound />} />
-            </Routes>
+            </Routes> */}
         </div>
     )
 }

@@ -1,7 +1,5 @@
 import React from 'react'
-import ReactDOM, { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import App from './pages/App'
+import ReactDOM from 'react-dom/client'
 import 'bootstrap'
 import './index.css'  // Global styles for your application
 import { RouterProvider } from "react-router-dom";  // Import RouterProvider to use the router
@@ -21,12 +19,14 @@ const Main = () => {
             {/* Provide global state to all components */}
             <StoreProvider>
                 {/* Set up routing for the application */}
-                <RouterProvider router={router}>
+                <RouterProvider router={router} future={{
+                    v7_startTransition: true
+                }}>
                 </RouterProvider>
             </StoreProvider>
         </React.StrictMode>
     );
-}
+};
 
 // createRoot(document.getElementById('root')).render(
 //     <React.StrictMode>
