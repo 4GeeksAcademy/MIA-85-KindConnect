@@ -1,4 +1,4 @@
-// Import necessary components and functions from react-router-dom.
+
 
 import {
   createBrowserRouter,
@@ -27,7 +27,7 @@ export const router = createBrowserRouter(
 
     // Root Route: All navigation will start from here.
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
-      <Route path="/" element={<App />} />
+      <Route path="/" element={<Home />} />
       <Route path="food" element={<FoodHub />}>
         <Route index element={<Navigate to="needs" replace />} />
         <Route path="needs" element={<FoodNeedsPage />} />
