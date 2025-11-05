@@ -1,29 +1,28 @@
-import { Link } from "react-router-dom";
+import React from "react";
+import logo from "../assets/img/logopng.png";
 
-export const Navbar = () => {
-	return (
-		<nav className="navbar navbar-expand-lg bg-light border-bottom">
-			<div className="container">
-				<Link to="/" className="navbar-brand fw-bold">KindConnect</Link>
-				<div className="navbar-nav">
-					<Link to="/food" className="nav-link">Food</Link>
-					<Link to="/food/new" className="nav-link">Post a Need</Link>
-				</div>
-			</div>
-		</nav>
-	);
-	// return (
-	// 	<nav className="navbar navbar-light bg-light">
-	// 		<div className="container">
-	// 			<Link to="/">
-	// 				<span className="navbar-brand mb-0 h1">React Boilerplate</span>
-	// 			</Link>
-	// 			<div className="ml-auto">
-	// 				<Link to="/demo">
-	// 					<button className="btn btn-primary">Check the Context in action</button>
-	// 				</Link>
-	// 			</div>
-	// 		</div>
-	// 	</nav>
-	// );
-};
+export default function Nav() {
+  return (
+    <header className="header">
+      
+      <a href="#" className="brand__link" aria-label="KindConnect home">
+        <img src={logo} alt="" className="brand__logo" />
+        <span className="wm" aria-label="KindConnect">
+          Kind<span className="wm__c" aria-hidden="true">C</span>
+          <span className="wm__heart" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="heart">
+              <path fill="#E53935" d="M12 21s-6.7-4.35-9.33-7.03A6 6 0 1 1 11.98 6a6 6 0 1 1 9.35 7.97C18.7 16.65 12 21 12 21z"/>
+            </svg>
+          </span>
+          nnect
+        </span>
+      </a>
+
+      {/* Right: actions */}
+      <nav className="nav">
+        <a href="#" className="nav__link">Home</a>
+        <a href="#" className="nav__btn">Log in</a>
+      </nav>
+    </header>
+  );
+}
