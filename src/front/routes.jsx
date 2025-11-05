@@ -10,12 +10,9 @@ import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
-import App from "./pages/App";
-import FoodHub from "./pages/FoodHub";
-import FoodNeedsPage from "./pages/FoodNeedsPage";
-import FoodDonationsPage from "./pages/FoodDonationsPage";
-import CreateProjectForm from "./pages/CreateProjectForm";
-import ProjectDetails from "./pages/ProjectDetails";
+import Food from "./pages/Food";
+import KindConnect from "./pages/KindConnect.jsx";
+import PostFormModal from "./components/PostFormModal.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -27,22 +24,14 @@ export const router = createBrowserRouter(
 
     // Root Route: All navigation will start from here.
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
-      <Route path="/" element={<Home />} />
-      <Route path="food" element={<FoodHub />}>
-        <Route index element={<Navigate to="needs" replace />} />
-        <Route path="needs" element={<FoodNeedsPage />} />
-        <Route path="donations" element={<FoodDonationsPage />} />
-        <Route path="new" element={<CreateProjectForm />} />
-      </Route>
-      <Route path="projects/:id" element={<ProjectDetails />} />
-      {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
 
-      <Route path="single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
-      <Route path="demo" element={<Demo />} />
+      {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
+      <Route path="/" element={<Home />} />
+      <Route path="/single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
+      <Route path="/demo" element={<Demo />} />
+      <Route path="/food" element={<Food />} />
+      <Route path="/kindconnect" element={<KindConnect />} />
+      <Route path="/postformmodal" element={<PostFormModal />} />
     </Route>
-  ), {
-  future: {
-    v7_relativeSplatPath: true
-  }
-}
+  )
 );
