@@ -10,12 +10,9 @@ import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
-import App from "./pages/App";
-import FoodHub from "./pages/FoodHub";
-import FoodNeedsPage from "./pages/FoodNeedsPage";
-import FoodDonationsPage from "./pages/FoodDonationsPage";
-import CreateProjectForm from "./pages/CreateProjectForm";
-import ProjectDetails from "./pages/ProjectDetails";
+import { Signup } from "./pages/Signup";
+import { Login } from "./pages/Login";
+import { Profile } from "./pages/Profile";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -25,21 +22,18 @@ export const router = createBrowserRouter(
     // Note: keep in mind that errorElement will be the default page when you don't get a route, customize that page to make your project more attractive.
     // Note: The child paths of the Layout element replace the Outlet component with the elements contained in the "element" attribute of these child paths.
 
-    // Root Route: All navigation will start from here.
-    <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
-      <Route path="/" element={<Home />} />
-      <Route path="food" element={<FoodHub />}>
-        <Route index element={<Navigate to="needs" replace />} />
-        <Route path="needs" element={<FoodNeedsPage />} />
-        <Route path="donations" element={<FoodDonationsPage />} />
-        <Route path="new" element={<CreateProjectForm />} />
-      </Route>
-      <Route path="projects/:id" element={<ProjectDetails />} />
-      {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
+      // Root Route: All navigation will start from here.
+      <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
 
-      <Route path="single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
-      <Route path="demo" element={<Demo />} />
-    </Route>
+        {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
+        <Route path= "/" element={<Home />} />
+        <Route path="/single/:theId" element={ <Single />} />  {/* Dynamic route for single items */}
+        <Route path="/demo" element={<Demo />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
+      </Route>
+
   ), {
   future: {
     v7_relativeSplatPath: true
