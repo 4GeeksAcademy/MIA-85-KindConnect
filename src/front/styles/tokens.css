@@ -1,0 +1,13 @@
+:root{
+  --ink:#0b1226;
+  --muted:#64748b;
+  --surface:#ffffff;
+  --surface-2:#f6f7fb;
+  --border:#e5e7eb;
+  --primary:#ffb703;
+  --primary-ink:#0b1226;
+  --accent:#219ebc;
+  --radius:12px;
+
+  --brand-gradient: conic-gradient(from 180deg at 50% 50%, #fb8500, #ffb703, #ffd166, #ffb703 80%, #fb8500 100%);
+}

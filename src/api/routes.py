@@ -1,8 +1,8 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-from flask import Flask, request, jsonify, Blueprint
-from api.models import db, User
+from flask import Flask, request, jsonify, url_for, Blueprint
+from api.models import db, User, Project, ProjectUpdate, Comment
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -45,7 +45,7 @@ def handle_signup():
     if existing_user:
         return jsonify({"message": "User with this email or username already exists..."}), 400
 
-    hashed_password = generate_password_hash(password, method='scrypt', salt_length=16)
+    hashed_password = generate_password_hash(password)
 
     new_user = User(
         first_name=first_name,
@@ -77,7 +77,7 @@ def handle_login():
     if user is None:
         return jsonify({"message": "No such user..."}), 400
  
-    if not check_password_hash(user.password, password):
+    if not user.check_password(user.password, password):
         return jsonify({"message": "Invalid credentials..."}), 400
 
     user_token = create_access_token(identity=str(user.id))
