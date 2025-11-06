@@ -1,0 +1,8 @@
+/* Keeping themes minimal for now. we can expand later. */
+
+body.theme-landing{
+  --surface:#ffffff;
+  --surface-2:#E6F4FF;
+  --border:#e5e7eb;
+  background: var(--surface-2);
+}

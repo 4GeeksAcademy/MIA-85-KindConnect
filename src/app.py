@@ -1,3 +1,4 @@
+
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
@@ -6,10 +7,11 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, User, Post, Reply, Favorite
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from flask_cors import CORS
 
 # from models import Person
 
@@ -17,6 +19,7 @@ ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
 app = Flask(__name__)
+CORS(app)
 app.url_map.strict_slashes = False
 
 # database condiguration
@@ -56,7 +59,29 @@ def sitemap():
         return generate_sitemap(app)
     return send_from_directory(static_file_dir, 'index.html')
 
+
+@app.get("/api/posts")
+def get_posts():
+    posts = Post.query.order_by(Post.id.desc()).all()
+    return jsonify([p.serialize() for p in posts]), 200
+
+
+@app.post("/api/posts")
+def create_post():
+    data = request.get_json() or {}
+    body = data.get("body", "").strip()
+    author = (data.get("author") or "anon").strip()
+    if not body:
+        return jsonify({"error": "Post body is required"}), 400
+
+    post = Post(author=author, body=body)
+    db.session.add(post)
+    db.session.commit()
+    return jsonify(post.serialize()), 201
+
 # any other endpoint will try to serve it like a static file
+
+
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
     if not os.path.isfile(os.path.join(static_file_dir, path)):
