@@ -13,6 +13,9 @@ import { Demo } from "./pages/Demo";
 import Food from "./pages/Food";
 import KindConnect from "./pages/KindConnect.jsx";
 import PostFormModal from "./components/PostFormModal.jsx";
+import { Signup } from "./pages/Signup";
+import { Login } from "./pages/Login";
+import { Profile } from "./pages/Profile";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -32,6 +35,9 @@ export const router = createBrowserRouter(
       <Route path="/food" element={<Food />} />
       <Route path="/kindconnect" element={<KindConnect />} />
       <Route path="/postformmodal" element={<PostFormModal />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/profile" element={<Profile />} />
     </Route>
   )
 );
