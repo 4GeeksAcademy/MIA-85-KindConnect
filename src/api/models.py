@@ -23,11 +23,11 @@ def serialize(self):
 
 
 class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author = db.Column(db.String(80), default="anon")
-    body = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime)
-    replies = db.relationship("Reply", backref="post",
+    id: int = db.Column(db.Integer, primary_key=True)
+    author: str = db.Column(db.String(80), default="anon")
+    body: str = db.Column(db.Text, nullable=False)
+    created_at: datetime = db.Column(db.DateTime, default=datetime)
+    replies: str = db.relationship("Reply", backref="post",
                               cascade="all, delete-orphan")
     favorites = db.relationship(
         "Favorite", backref="post", cascade="all, delete-orphan")
@@ -66,11 +66,11 @@ class Reply(db.Model):
 
 
 class Favorite(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey(
+    id: int = db.Column(db.Integer, primary_key=True)
+    post_id: int = db.Column(db.Integer, db.ForeignKey(
         "post.id"), nullable=False, index=True)
-    device_id = db.Column(db.String(120), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime)
+    device_id: int = db.Column(db.String(120), nullable=False)
+    created_at: datetime = db.Column(db.DateTime, default=datetime)
     __table_args__ = (UniqueConstraint(
         "post_id", "device_id", name="uq_post_device"),)
 
