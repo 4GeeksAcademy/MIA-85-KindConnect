@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 export default function CreatePost({ open, onClose, onSubmit, defaultType = "wanted" }) {
   const [type, setType] = useState(defaultType);
   const [title, setTitle] = useState("");
@@ -12,10 +11,10 @@ export default function CreatePost({ open, onClose, onSubmit, defaultType = "wan
   const handleSubmit = (e) => {
     e.preventDefault();
     const payload = {
-      type,                               // "wanted" or "offer" (auto-filled)
+      type,                               
       title: title.trim(),
       description: desc.trim(),
-      files                                // Array<File>
+      files
     };
     onSubmit?.(payload);
     onClose?.();
@@ -29,14 +28,30 @@ export default function CreatePost({ open, onClose, onSubmit, defaultType = "wan
           <button className="cp__close" aria-label="Close" onClick={onClose}>✕</button>
         </div>
 
-        <p className="cp__note">Posting as <strong>{type === "offer" ? "Offer" : "Wanted"}</strong></p>
+        {/* Type selector (wanted/offer) */}
+        <div className="cp__seg" role="group" aria-label="Post type">
+          <button
+            type="button"
+            className={`cp__segBtn ${type === "wanted" ? "is-active" : ""}`}
+            onClick={() => setType("wanted")}
+          >
+            Wanted
+          </button>
+          <button
+            type="button"
+            className={`cp__segBtn ${type === "offer" ? "is-active" : ""}`}
+            onClick={() => setType("offer")}
+          >
+            Offer
+          </button>
+        </div>
 
         <form className="cp__form" onSubmit={handleSubmit}>
           <label htmlFor="cpTitle" className="cp__label">Title</label>
           <input
             id="cpTitle"
             className="cp__input"
-            placeholder="e.g., Need help fixing a leaky faucet"
+            placeholder={type === "wanted" ? "e.g., Need help fixing a leaky faucet" : "e.g., I can fix leaky faucets this weekend"}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required

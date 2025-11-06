@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import Hero from "../components/Hero.jsx";                       // hero header (emoji next to title)
+import Hero from "../components/Hero.jsx";                       
 import CreatePost from "../components/CreatePost.jsx"; // simple post composer overlay
 
 export default function Honeydo() {
@@ -78,7 +78,6 @@ export default function Honeydo() {
         </section>
       </div>
 
-      {/* Simple overlay composer (auto-fills type from current filter) */}
       <CreatePost
         open={openCreate}
         onClose={() => setOpenCreate(false)}

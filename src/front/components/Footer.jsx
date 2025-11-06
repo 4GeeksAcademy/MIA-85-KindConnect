@@ -9,7 +9,6 @@ export default function Footer() {
         <div className="kc-footer__inner">
           {/* LEFT: About + Keep in touch + Socials */}
           <div className="kc-footer__col">
-            {/* Use router Link so it doesn't full-reload */}
             <Link to="/about" className="kc-footer__miniLink">About us</Link>
 
             <div className="kc-footer__section">
@@ -65,7 +64,7 @@ export default function Footer() {
         </div>
       </footer>
 
-      {/* Bottom bar: © YEAR KindConnect · Neighbors helping neighbors. */}
+      {/* Bottom bar: © YEAR KindConnect*/}
       <div className="kc-footer__bar">
         <span>&copy; {year} KindConnect · Neighbors helping neighbors.</span>
       </div>

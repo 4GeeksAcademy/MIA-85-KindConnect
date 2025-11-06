@@ -1,7 +1,13 @@
 
 .kc-footer{
-  margin-top:24px; background:var(--surface);
-  border-top:1px solid var(--border); color:var(--ink);
+  margin-top:24px; background: var(--footer-surface);
+  border-top:1px solid var(--border); border-top-color: #bcdcff;
+}
+
+.kc-footer__bar{
+  background: var(--footer-bar);
+  color: var(--muted);
+  border-top-color: #bad7ff;
 }
 .kc-footer__inner{
   max-width:1200px; margin:0 auto; padding:18px 16px;
