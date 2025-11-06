@@ -23,7 +23,7 @@ export const Login = () => {
                 const token = body.token;
                 dispatch({ type: "authenticate", payload: token });
                 setMessage("Login successful! Redirecting...");
-                setTimeout(() => navigate("/demo"), 1500);
+                setTimeout(() => navigate("/"), 1500);
             } else {
                 setMessage(body.message || "Invalid email or password.");
             }

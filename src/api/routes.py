@@ -77,7 +77,7 @@ def handle_login():
     if user is None:
         return jsonify({"message": "No such user..."}), 400
  
-    if not user.check_password(user.password, password):
+    if not user.check_password(password):
         return jsonify({"message": "Invalid credentials..."}), 400
 
     user_token = create_access_token(identity=str(user.id))

@@ -38,14 +38,13 @@ class User(db.Model):
     
 
     def set_password(self, pwd):
-        self.password_hash = generate_password_hash(pwd)
+        self.password = generate_password_hash(pwd)
 
     def check_password(self, pwd):
-        return check_password_hash(self.password_hash, pwd)
+        return check_password_hash(self.password, pwd)
 
 
 class Project(db.Model):
-    __tablename__ = "projects"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(140), nullable=False)
     description = db.Column(db.Text, nullable=False)
@@ -59,28 +58,26 @@ class Project(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     requester_id = db.Column(
-        db.Integer, db.ForeignKey('users.id'), nullable=False)
+        db.Integer, db.ForeignKey('user.id'), nullable=False)
     volunteer_id = db.Column(db.Integer, db.ForeignKey(
-        'users.id'))  # nullable until claimed
+        'user.id'))  # nullable until claimed
 
     requester = db.relationship('User', foreign_keys=[requester_id])
     volunteer = db.relationship('User', foreign_keys=[volunteer_id])
 
 
 class ProjectUpdate(db.Model):
-    __tablename__ = "project_updates"
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey(
-        'projects.id'), nullable=False)
+        'project.id'), nullable=False)
     note = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Comment(db.Model):
-    __tablename__ = "comments"
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey(
-        'projects.id'), nullable=False, index=True)
+        'project.id'), nullable=False, index=True)
     author_name = db.Column(db.String(120), nullable=False)
     body = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
