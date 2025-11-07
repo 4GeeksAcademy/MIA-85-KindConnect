@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, Integer, DateTime
+from sqlalchemy import String, Boolean, Integer, DateTime, Date
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,7 +15,7 @@ class User(db.Model):
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     phone_number: Mapped[str] = mapped_column(String(20), unique=True, nullable=True)
-    date_of_birth: Mapped[datetime] = mapped_column(nullable=True)
+    date_of_birth: Mapped[datetime.date] = mapped_column(Date, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
