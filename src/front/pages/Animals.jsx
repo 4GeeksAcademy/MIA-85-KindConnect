@@ -37,7 +37,7 @@ function CreatePost() {
               onChange={handleZipChange}
             />
             <button type="submit" className="btn btn-success">
-              Add ZIP Code
+              Add ZIP Code to narrow down search
             </button>
           </form>
         </div>
