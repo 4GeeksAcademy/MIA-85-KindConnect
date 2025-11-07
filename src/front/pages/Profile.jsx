@@ -9,7 +9,7 @@ export const Profile = () => {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  //Fetch profile details on load if not in store
+  // Fetch profile details on load if not in store
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -28,16 +28,22 @@ export const Profile = () => {
       }
     };
 
-    if (store.token && !store.user) 
-        fetchProfile();
-    else if (store.user) 
-        setFormData(store.user);
+    if (store.token && !store.user) fetchProfile();
+    else if (store.user) setFormData(store.user);
   }, [store.token, store.user, store.API_BASE_URL, dispatch]);
 
   if (!store.token) {
     return (
-      <div className="container mt-5">
-        <h4>You must be logged in to view this page.</h4>
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="text-center">
+          <h4>You must be logged in to view this page.</h4>
+          <button
+            className="btn btn-primary mt-3"
+            onClick={() => navigate("/login")}
+          >
+            Go to Login
+          </button>
+        </div>
       </div>
     );
   }
@@ -73,16 +79,10 @@ export const Profile = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Profile</h2>
-        <button className="btn btn-outline-secondary" onClick={() => navigate("/")}>
-          ← Back to Home
-        </button>
-      </div>
-
-      <div className="card mt-2 shadow-sm">
+    <div className="d-flex justify-content-center align-items-center py-5">
+      <div className="card shadow-lg p-4" style={{ maxWidth: "500px", width: "100%" }}>
         <div className="card-body">
+          <h2 className="card-title text-center mb-4">Profile</h2>
           {!editing ? (
             <>
               <p><strong>First Name:</strong> {formData.first_name || "N/A"}</p>
@@ -90,39 +90,50 @@ export const Profile = () => {
               <p><strong>Username:</strong> {formData.username || "N/A"}</p>
               <p><strong>Email:</strong> {formData.email || "N/A"}</p>
               <p><strong>Phone:</strong> {formData.phone_number || "N/A"}</p>
-              <p><strong>Date of Birth:</strong> {formData.date_of_birth || "N/A"}</p>
+              <p>
+                <strong>Date of Birth:</strong>{" "}
+                {formData.date_of_birth
+                  ? new Date(formData.date_of_birth).toLocaleDateString("en-US")
+                  : "N/A"}
+              </p>
 
-              <button
-                className="btn btn-outline-primary me-2"
-                onClick={() => setEditing(true)}
-              >
-                Edit Profile
-              </button>
+              <div className="d-flex justify-content-between mt-4">
+                <button
+                  className="btn btn-outline-primary"
+                  onClick={() => setEditing(true)}
+                >
+                  Edit Profile
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => navigate("/")}
+                >
+                  Back to Home
+                </button>
+              </div>
             </>
           ) : (
             <>
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">First Name</label>
-                  <input
-                    type="text"
-                    name="first_name"
-                    className="form-control"
-                    value={formData.first_name || ""}
-                    onChange={handleChange}
-                  />
-                </div>
+              <div className="mb-3">
+                <label className="form-label">First Name</label>
+                <input
+                  type="text"
+                  name="first_name"
+                  className="form-control"
+                  value={formData.first_name || ""}
+                  onChange={handleChange}
+                />
+              </div>
 
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">Last Name</label>
-                  <input
-                    type="text"
-                    name="last_name"
-                    className="form-control"
-                    value={formData.last_name || ""}
-                    onChange={handleChange}
-                  />
-                </div>
+              <div className="mb-3">
+                <label className="form-label">Last Name</label>
+                <input
+                  type="text"
+                  name="last_name"
+                  className="form-control"
+                  value={formData.last_name || ""}
+                  onChange={handleChange}
+                />
               </div>
 
               <div className="mb-3">
@@ -169,15 +180,17 @@ export const Profile = () => {
                 />
               </div>
 
-              <button className="btn btn-success me-2" onClick={handleSave}>
-                Save
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => setEditing(false)}
-              >
-                Cancel
-              </button>
+              <div className="d-flex justify-content-between mt-4">
+                <button className="btn btn-primary" onClick={handleSave}>
+                  Save
+                </button>
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => setEditing(false)}
+                >
+                  Cancel
+                </button>
+              </div>
             </>
           )}
 
