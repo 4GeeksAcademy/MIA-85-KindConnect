@@ -8,7 +8,7 @@ function CreatePost() {
   const [posts] = useState([]); 
 
   const handleZipChange = (e) => {
-    setZipcode(e.target.value);
+    setZipcode(e.target.value); 
   };
 
   const handleZipSubmit = (e) => {
