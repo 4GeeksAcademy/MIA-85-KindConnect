@@ -120,4 +120,5 @@ function Post({ post }) {
   );
 }
 
+
 export default CreatePost;
