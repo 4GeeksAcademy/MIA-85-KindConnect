@@ -13,6 +13,9 @@ export const Signup = () => {
     const [message, setMessage] = useState("");
     const { store } = useGlobalReducer();
     const navigate = useNavigate();
+    const [securityQuestion, setSecurityQuestion] = useState("");
+    const [securityAnswer, setSecurityAnswer] = useState("");
+
 
     async function signupRequest() {
         try {
@@ -27,6 +30,8 @@ export const Signup = () => {
                     password,
                     phone_number: phoneNumber,
                     date_of_birth: dateOfBirth,
+                    security_question: securityQuestion,
+                    security_answer: securityAnswer,
                 }),
             });
 
@@ -152,6 +157,31 @@ export const Signup = () => {
                             onChange={(e) => setDateOfBirth(e.target.value)}
                         />
                     </div>
+
+                    <div className="mb-3">
+                        <label className="form-label">Security Question</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="e.g., What is your favorite color?"
+                            value={securityQuestion}
+                            onChange={(e) => setSecurityQuestion(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label">Security Answer</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter your answer"
+                            value={securityAnswer}
+                            onChange={(e) => setSecurityAnswer(e.target.value)}
+                            required
+                        />
+                    </div>
+
 
                     <button
                         type="submit"

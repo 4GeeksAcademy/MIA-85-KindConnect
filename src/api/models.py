@@ -20,6 +20,8 @@ class User(db.Model):
     is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    security_question: Mapped[str] = mapped_column(String(255), nullable=True)
+    security_answer_hash: Mapped[str] = mapped_column(String(255), nullable=True)
 
     def serialize(self):
         return {
@@ -29,7 +31,9 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
             "phone_number": self.phone_number,
-            "date_of_birth": self.date_of_birth.isoformat() if self.date_of_birth else None,
+            "date_of_birth": (
+            self.date_of_birth.strftime("%Y-%m-%d") if self.date_of_birth else None
+            ),
             "is_active": self.is_active,
             "is_verified": self.is_verified,
             "created_at": self.created_at.isoformat() if self.created_at else None,
@@ -42,6 +46,12 @@ class User(db.Model):
 
     def check_password(self, pwd):
         return check_password_hash(self.password, pwd)
+    
+    def set_security_answer(self, answer):
+        self.security_answer_hash = generate_password_hash(answer)
+
+    def check_security_answer(self, answer):
+        return check_password_hash(self.security_answer_hash, answer)    
 
 
 class Project(db.Model):

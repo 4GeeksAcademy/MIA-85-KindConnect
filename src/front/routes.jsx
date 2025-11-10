@@ -13,6 +13,7 @@ import { Demo } from "./pages/Demo";
 import { Signup } from "./pages/Signup";
 import { Login } from "./pages/Login";
 import { Profile } from "./pages/Profile";
+import { ResetPassword } from "./pages/ResetPassword";
 // Animals page: default export from Animals.jsx
 import Animals from "./pages/Animals";
 
@@ -26,7 +27,6 @@ export const router = createBrowserRouter(
 
     // Root Route: All navigation will start from here.
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
-
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route path="/" element={<Home />} />
       <Route path="/animals" element={<Animals />} />
@@ -34,7 +34,8 @@ export const router = createBrowserRouter(
       <Route path="/demo" element={<Demo />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/profile" element={<Profile />} />      
+      <Route path="/resetPassword" element={<ResetPassword />} />  
     </Route>
 
   ), {
