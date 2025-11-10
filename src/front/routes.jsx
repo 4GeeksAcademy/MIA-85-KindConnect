@@ -16,6 +16,7 @@ import { Profile } from "./pages/Profile";
 import { ResetPassword } from "./pages/ResetPassword";
 // Animals page: default export from Animals.jsx
 import Animals from "./pages/Animals";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -29,7 +30,7 @@ export const router = createBrowserRouter(
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route path="/" element={<Home />} />
-      <Route path="/animals" element={<Animals />} />
+      <Route path="/animals" element={ <ProtectedRoute><Animals /></ProtectedRoute>} />
       <Route path="/single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
       <Route path="/demo" element={<Demo />} />
       <Route path="/signup" element={<Signup />} />

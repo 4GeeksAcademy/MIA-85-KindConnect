@@ -21,7 +21,7 @@ export const Login = () => {
 
             if (response.ok) {
                 const { token, user } = body;
-
+                localStorage.setItem("token", token);
                 if (token && user) {
                     dispatch({ type: "authenticate", payload: { token, user } });
                 }

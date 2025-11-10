@@ -7,6 +7,13 @@ export const Navbar = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
+		const token = localStorage.getItem("token");
+		const user = JSON.parse(localStorage.getItem("user"));
+		if (token && !store.token) {
+			dispatch({ type: "authenticate", payload: { token, user } });
+		}
+	}, [dispatch, store.token]);
+	useEffect(() => {
 		const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
 		const tooltipList = [...tooltipTriggerList].map(
 			(tooltipTriggerEl) => new window.bootstrap.Tooltip(tooltipTriggerEl)
