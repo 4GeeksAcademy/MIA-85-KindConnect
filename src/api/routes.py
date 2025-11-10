@@ -33,9 +33,13 @@ def handle_signup():
     password = body.get("password")
     phone_number = body.get("phone_number")
     date_of_birth = body.get("date_of_birth")
+    security_question = body.get("security_question")
+    security_answer = body.get("security_answer")
 
+    if not date_of_birth:
+        date_of_birth = None
 
-    if not all([first_name, last_name, username, email, password]):
+    if not all([first_name, last_name, username, email, password, security_question, security_answer]):
         return jsonify({"message": "Missing required fields..."}), 400
 
     # Check for existing user
@@ -57,12 +61,50 @@ def handle_signup():
         date_of_birth=date_of_birth,
         is_active=True,
         is_verified=False,
+        security_question=security_question
     )
+
+    new_user.set_password(password)
+    new_user.set_security_answer(security_answer)
 
     db.session.add(new_user)
     db.session.commit()
 
     return jsonify({"message": "User created successfully!"}), 201
+
+@api.route('/resetPassword/question', methods=['POST'])
+def getSecurityQuestion():
+    body = request.json
+    email = body.get("email")
+
+    user = db.session.scalars(select(User).where(User.email == email)).one_or_none()
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    return jsonify({"security_question": user.security_question}), 200
+
+@api.route('/resetPassword/verify', methods=['POST'])
+def verifyResetPassword():
+    body = request.json
+    email = body.get("email")
+    answer = body.get("security_answer")
+    new_password = body.get("new_password")
+
+    if not all([email, answer, new_password]):
+        return jsonify({"message": "Missing required fields"}), 400
+
+    user = db.session.scalars(select(User).where(User.email == email)).one_or_none()
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    if not user.check_security_answer(answer):
+        return jsonify({"message": "Incorrect security answer"}), 403
+
+    user.set_password(new_password)
+    db.session.commit()
+
+    return jsonify({"message": "Password reset successfully!"}), 200
+
 
 @api.route('/login', methods=['POST'])
 def handle_login():
@@ -75,10 +117,10 @@ def handle_login():
 
     user = db.session.scalars(select(User).where(User.email == email)).one_or_none()
     if user is None:
-        return jsonify({"message": "No such user..."}), 400
+        return jsonify({"message": "No such user..."}), 401
  
     if not user.check_password(password):
-        return jsonify({"message": "Invalid credentials..."}), 400
+        return jsonify({"message": "Invalid credentials..."}), 401
 
     user_token = create_access_token(identity=str(user.id))
     response_body = {
@@ -130,7 +172,16 @@ def update_profile():
     user.username = body.get("username", user.username)
     user.email = body.get("email", user.email)
     user.phone_number = body.get("phone_number", user.phone_number)
-    user.date_of_birth = body.get("date_of_birth", user.date_of_birth)
+
+    date_of_birth = body.get("date_of_birth")
+    if not date_of_birth:
+        user.date_of_birth = None
+    else:
+        from datetime import datetime
+        try:
+            user.date_of_birth = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"message": "Invalid date format (expected YYYY-MM-DD)"}), 400
 
     db.session.commit()
     return jsonify(user.serialize()), 200

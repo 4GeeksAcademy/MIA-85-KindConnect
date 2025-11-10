@@ -55,6 +55,22 @@ export const Profile = () => {
 
   const handleSave = async () => {
     try {
+      if (!formData.first_name?.trim()) {
+        setMessage("First name is required.");
+        return;
+      }
+      if (!formData.last_name?.trim()) {
+        setMessage("Last name is required.");
+        return;
+      }      
+      if (!formData.username?.trim()) {
+        setMessage("Username is required.");
+        return;
+      }
+      if (!formData.email?.trim()) {
+        setMessage("Email is required.");
+        return;
+      }
       const response = await fetch(`${store.API_BASE_URL}/api/profile`, {
         method: "PUT",
         headers: {
@@ -92,9 +108,7 @@ export const Profile = () => {
               <p><strong>Phone:</strong> {formData.phone_number || "N/A"}</p>
               <p>
                 <strong>Date of Birth:</strong>{" "}
-                {formData.date_of_birth
-                  ? new Date(formData.date_of_birth).toLocaleDateString("en-US")
-                  : "N/A"}
+                {formData.date_of_birth || "N/A"}
               </p>
 
               <div className="d-flex justify-content-between mt-4">

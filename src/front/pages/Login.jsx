@@ -9,47 +9,47 @@ export const Login = () => {
     const { store, dispatch } = useGlobalReducer();
     const navigate = useNavigate();
 
-	async function loginRequest() {
-		try {
-			const response = await fetch(`${store.API_BASE_URL}/api/login`, {
-				method: "POST",
-				body: JSON.stringify({ email, password }),
-				headers: { "Content-Type": "application/json" },
-			});
+    async function loginRequest() {
+        try {
+            const response = await fetch(`${store.API_BASE_URL}/api/login`, {
+                method: "POST",
+                body: JSON.stringify({ email, password }),
+                headers: { "Content-Type": "application/json" },
+            });
 
-			const body = await response.json();
+            const body = await response.json();
 
-			if (response.ok) {
-				const { token, user } = body;
+            if (response.ok) {
+                const { token, user } = body;
 
-				if (token && user) {
-					dispatch({ type: "authenticate", payload: { token, user } });
-				}
-				else if (token) {
-					dispatch({ type: "authenticate", payload: token });
-					try {
-						const profileRes = await fetch(`${store.API_BASE_URL}/api/profile`, {
-							headers: { Authorization: `Bearer ${token}` },
-						});
-						if (profileRes.ok) {
-							const userData = await profileRes.json();
-							dispatch({ type: "update_user", payload: userData });
-						}
-					} catch (error) {
-						console.error("Profile fetch failed:", error);
-					}
-				}
+                if (token && user) {
+                    dispatch({ type: "authenticate", payload: { token, user } });
+                }
+                else if (token) {
+                    dispatch({ type: "authenticate", payload: token });
+                    try {
+                        const profileRes = await fetch(`${store.API_BASE_URL}/api/profile`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                        });
+                        if (profileRes.ok) {
+                            const userData = await profileRes.json();
+                            dispatch({ type: "update_user", payload: userData });
+                        }
+                    } catch (error) {
+                        console.error("Profile fetch failed:", error);
+                    }
+                }
 
-				setMessage("Login successful! Redirecting...");
-				setTimeout(() => navigate("/"), 1500);
-			} else {
-				setMessage(body.message || "Invalid email or password.");
-			}
-		} catch (error) {
-			console.error("Login error:", error);
-			setMessage("Something went wrong. Please try again.");
-		}
-	}
+                setMessage("Login successful! Redirecting...");
+                setTimeout(() => navigate("/"), 1500);
+            } else {
+                setMessage(body.message || "Invalid email or password.");
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            setMessage("Something went wrong. Please try again.");
+        }
+    }
 
     return (
         <div
@@ -94,7 +94,7 @@ export const Login = () => {
                         </div>
                     </div>
 
-  
+
                     <div className="mb-3">
                         <label htmlFor="loginPassword" className="form-label fw-semibold">
                             Password
@@ -110,7 +110,7 @@ export const Login = () => {
                         />
                     </div>
 
-   
+
                     <div className="d-grid gap-2 mt-4">
                         <button
                             type="submit"
@@ -126,6 +126,7 @@ export const Login = () => {
                             Login
                         </button>
                     </div>
+
                 </form>
 
                 {message && (
@@ -140,6 +141,13 @@ export const Login = () => {
                         Sign up here
                     </Link>
                 </div>
+
+                <div className="text-center mt-3">
+                    <Link to="/resetPassword" className="fw-semibold text-decoration-none">
+                        Forgot your password?
+                    </Link>
+                </div>
+
             </div>
         </div>
     );
