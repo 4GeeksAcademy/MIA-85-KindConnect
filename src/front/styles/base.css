@@ -1,17 +1,68 @@
-*{ box-sizing: border-box }
-html, body, #root{ height:100% }
-
-body{
-  margin:0;
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: "Roboto", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    sans-serif;
+  color: var(--ink);
   background: var(--surface-2);
   color: var(--ink);
   font-family: "Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
   line-height: 1.5;
 }
 
-/* a11y focus */
-:where(a,button,input,textarea):focus-visible{
+/* Focus ring (a11y) */
+:where(a, button, input, select, textarea):focus-visible {
   outline: 3px solid color-mix(in oklab, var(--accent) 60%, transparent);
   outline-offset: 2px;
   border-radius: 10px;
+}
+
+/* screen-reader helper */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+header {
+  border-bottom: 1px solid #ccc;
+  padding: 0.75rem 1rem;
+}
+footer {
+  border-top: 1px solid #ccc;
+  padding: 1rem 0;
+  font-size: 0.9rem;
+}
+.sidebar {
+  border-right: 1px solid #ddd;
+}
+.post-box {
+  min-height: 300px;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+.btn-green {
+  background-color: #70c36b;
+  color: #fff;
+}
+.btn-green:hover {
+  background-color: #5aa858;
+  color: #fff;
+}
+.heart {
+  color: #007bff;
 }
