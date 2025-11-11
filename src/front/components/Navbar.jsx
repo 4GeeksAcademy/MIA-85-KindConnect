@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-
+import logo from "../assets/img/logopng.png";
 export const Navbar = () => {
 	const { store, dispatch } = useGlobalReducer();
 	const navigate = useNavigate();
@@ -32,7 +32,16 @@ export const Navbar = () => {
 		<nav className="navbar navbar-expand-lg navbar-light bg-light border-bottom">
 			<div className="container">
 				<Link to="/" className="navbar-brand fw-bold">
-					KindConnect
+					<img src={logo} alt="" className="brand__logo" />
+        <span className="wm" aria-label="KindConnect">
+          Kind<span className="wm__c" aria-hidden="true">C</span>
+          <span className="wm__heart" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="heart">
+              <path fill="#E53935" d="M12 21s-6.7-4.35-9.33-7.03A6 6 0 1 1 11.98 6a6 6 0 1 1 9.35 7.97C18.7 16.65 12 21 12 21z"/>
+            </svg>
+          </span>
+          nnect
+        </span>
 				</Link>
 
 				<div className="ms-auto d-flex align-items-center">

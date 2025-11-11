@@ -13,7 +13,7 @@ export const Home = () => {
           <div className="cats__chips">
             <button className="chip" type="button">Animal</button>
             <button className="chip" type="button">Food</button>
-            <button className="chip" type="button">Honey Do’s</button>
+            <button className="chip" type="button">Honey Do's</button>
           </div>
         </section>
       </aside>
