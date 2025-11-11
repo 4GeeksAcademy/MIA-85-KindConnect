@@ -16,6 +16,8 @@ import PostFormModal from "./components/PostFormModal.jsx";
 import { Signup } from "./pages/Signup";
 import { Login } from "./pages/Login";
 import { Profile } from "./pages/Profile";
+// Animals page: default export from Animals.jsx
+import Animals from "./pages/Animals";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -35,9 +37,15 @@ export const router = createBrowserRouter(
       <Route path="/food" element={<Food />} />
       <Route path="/kindconnect" element={<KindConnect />} />
       <Route path="/postformmodal" element={<PostFormModal />} />
+      <Route path="/animals" element={<Animals />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/profile" element={<Profile />} />
     </Route>
-  )
+
+  ), {
+  future: {
+    v7_relativeSplatPath: true
+  }
+}
 );

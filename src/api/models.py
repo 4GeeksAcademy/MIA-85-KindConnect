@@ -59,7 +59,7 @@ class Post(db.Model):
     body: str = db.Column(db.Text, nullable=False)
     created_at: datetime = db.Column(db.DateTime, default=datetime)
     replies: Mapped[List["Reply"]] = db.relationship(
-        "Reply", backref="post", cascade="all, delete-orphan")
+        "Reply", backref="post", cascade="all, delete-orphan")  # type: ignore
     favorites = db.relationship(
         "Favorite", backref="post", cascade="all, delete-orphan")
 
