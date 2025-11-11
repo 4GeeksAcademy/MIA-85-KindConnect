@@ -11,8 +11,6 @@ import { Home } from "./pages/Home";
 import Landing from "./pages/Landing.jsx";      // homepage
 import About from "./pages/About.jsx";          // footer link points here
 import Honeydo from "./pages/Honeydo.jsx";      // Honey Do’s
-import { Single } from "./pages/Single";
-import { Demo } from "./pages/Demo";
 import { Signup } from "./pages/Signup";
 import { Login } from "./pages/Login";
 import { Profile } from "./pages/Profile";
@@ -33,8 +31,6 @@ export const router = createBrowserRouter(
       <Route path="/honeydo" element={<Honeydo />} />
       <Route path="/about" element={<About />} />
       <Route path="/animals" element={ <ProtectedRoute><Animals /></ProtectedRoute>} />
-      <Route path="/single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
-      <Route path="/demo" element={<Demo />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/profile" element={<Profile />} />      
