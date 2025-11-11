@@ -7,46 +7,42 @@ import {
 
 
 import { Layout } from "./pages/Layout";
-
-
+import { Home } from "./pages/Home";
 import Landing from "./pages/Landing.jsx";      // homepage
 import About from "./pages/About.jsx";          // footer link points here
 import Honeydo from "./pages/Honeydo.jsx";      // Honey Do’s
-import FoodHub from "./pages/FoodHub";
-import FoodNeedsPage from "./pages/FoodNeedsPage";
-import FoodDonationsPage from "./pages/FoodDonationsPage";
-import CreateProjectForm from "./pages/CreateProjectForm";
-import ProjectDetails from "./pages/ProjectDetails";
+import { Single } from "./pages/Single";
+import { Demo } from "./pages/Demo";
+import { Signup } from "./pages/Signup";
+import { Login } from "./pages/Login";
+import { Profile } from "./pages/Profile";
+import { ResetPassword } from "./pages/ResetPassword";
+// Animals page: default export from Animals.jsx
+import Animals from "./pages/Animals";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route element={<Layout />} errorElement={<h1>Not found!</h1>}>
-      {/* HOME = Landing page */}
-      <Route index element={<Landing />} />
-
-      {/* Honey Do’s */}
-      <Route path="honeydo" element={<Honeydo />} />
-
-      {/* About (linked from footer) */}
-      <Route path="about" element={<About />} />
-
-      {/* Food hub (kept as in your original) */}
-      <Route path="food" element={<FoodHub />}>
-        <Route index element={<Navigate to="needs" replace />} />
-        <Route path="needs" element={<FoodNeedsPage />} />
-        <Route path="donations" element={<FoodDonationsPage />} />
-        <Route path="new" element={<CreateProjectForm />} />
-      </Route>
-
-      {/* Project details */}
-      <Route path="projects/:id" element={<ProjectDetails />} />
-
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+    
+    // Root Route: All navigation will start from here.
+    <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
+      {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
+      <Route path="/" element={<Home />} />
+      <Route path= "/landing" element={<Landing />} />
+      <Route path="/honeydo" element={<Honeydo />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/animals" element={ <ProtectedRoute><Animals /></ProtectedRoute>} />
+      <Route path="/single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
+      <Route path="/demo" element={<Demo />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/profile" element={<Profile />} />      
+      <Route path="/resetPassword" element={<ResetPassword />} />  
     </Route>
-  ),
-  {
-    future: { v7_relativeSplatPath: true },
-  }
+
+  ), {
+  future: {
+    v7_relativeSplatPath: true
+  }}
 );

@@ -1,17 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import 'bootstrap'
-
-// src/front/main.jsx
-import "./styles/index.css";
-
-
-import { RouterProvider } from "react-router-dom"
-import { router } from "./routes"
-
-// Store + BackendURL live one level up from /front
-import { StoreProvider } from './hooks/useGlobalReducer'
-import { BackendURL } from './components/BackendURL'
+import './styles/index.css'  // Global styles for your application
+import { RouterProvider } from "react-router-dom";  // Import RouterProvider to use the router
+import { router } from "./routes";  // Import the router configuration
+import { StoreProvider } from './hooks/useGlobalReducer';  // Import the StoreProvider for global state management
+import { BackendURL } from './components/BackendURL';
 
 const Main = () => {
   if (!import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_BACKEND_URL === "") {
@@ -34,4 +28,5 @@ const Main = () => {
   )
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<Main />)
+ReactDOM.createRoot(document.getElementById("root")).render(<Main />);
+

@@ -11,6 +11,7 @@ from api.models import db
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
 # from models import Person
@@ -33,6 +34,10 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
+
+app.config["JWT_SECRET_KEY"]= os.environ.get("FLASK_APP_KEY")
+app.config["JWT_REFRESH_TOKEN_EXPIRES"]= 57
+jwt = JWTManager(app)
 
 # add the admin
 setup_admin(app)
