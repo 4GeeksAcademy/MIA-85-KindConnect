@@ -4,6 +4,7 @@
   grid-template-columns: 220px minmax(640px, 1fr) 260px;
   gap: 16px;
   padding: 16px;
+  background-color: #FFF7E7;
 }
 .grid__left,
 .grid__center,
@@ -58,6 +59,7 @@
   border-radius: var(--radius);
   padding: 12px;
   margin-bottom: 12px;
+  margin-top: 20px
 }
 .zip__label {
   display: block;
@@ -95,12 +97,14 @@
 .postList {
   display: grid;
   gap: 12px;
+  margin-top: 20px
 }
 .post {
-  background: #fff;
+  background: #FFFFFf;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px;
+  text-align: center;
 }
 .post__title {
   margin: 4px 0;
@@ -124,7 +128,7 @@
   align-items: baseline;
   gap: 1px;
   font-weight: 800;
-  letter-spacing: 0.1px;
+  letter-spacing: 0.1px;;
 }
 .wm__c {
   font-size: 1.25em;

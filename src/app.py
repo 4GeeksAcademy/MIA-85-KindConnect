@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, User, Post, Reply, Favorite
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -63,6 +63,26 @@ def sitemap():
     if ENV == "development":
         return generate_sitemap(app)
     return send_from_directory(static_file_dir, 'index.html')
+
+
+@app.get("/api/posts")
+def get_posts():
+    posts = Post.query.order_by(Post.id.desc()).all()
+    return jsonify([p.serialize() for p in posts]), 200
+
+
+@app.post("/api/posts")
+def create_post():
+    data = request.get_json() or {}
+    body = data.get("body", "").strip()
+    author = (data.get("author") or "anon").strip()
+    if not body:
+        return jsonify({"error": "Post body is required"}), 400
+
+    post = Post(author=author, body=body)
+    db.session.add(post)
+    db.session.commit()
+    return jsonify(post.serialize()), 201
 
 # any other endpoint will try to serve it like a static file
 

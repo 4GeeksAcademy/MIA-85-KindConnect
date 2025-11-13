@@ -1,4 +1,15 @@
+
 @import "./tokens.css";
 @import "./base.css";
+
+/* Global components */
+@import "./nav.css";
 @import "./layout.css";
-@import "./themes.css";
+@import "./hero.css";
+@import "./createpost.css";
+
+/* Pages */
+@import "./pages/honeydo.css";
+@import "./pages/footer.css";
+@import "./pages/landing.css";
+

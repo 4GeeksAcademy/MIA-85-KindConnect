@@ -13,7 +13,7 @@ export const Home = () => {
           <div className="cats__chips">
             <button className="chip" type="button">Animal</button>
             <button className="chip" type="button">Food</button>
-            <button className="chip" type="button">Honey Do’s</button>
+            <button className="chip" type="button">Honey Do's</button>
           </div>
         </section>
       </aside>
@@ -44,13 +44,18 @@ export const Home = () => {
 
         {/* Backend connection card */}
         <article className="post">
-          <h2 className="post__title">Backend connection</h2>
-          <p className="post__details">
-            {store.message
-              ? store.message
-              : "Loading from backend… (ensure your backend is running and VITE_BACKEND_URL is set)"}
-          </p>
+           <h2 className="post__title">About Us:</h2>
+            <p className="post__details">
+        {store.message
+          ? store.message
+           : `KindConnect was made with a lot of love to help others with acts of service—free, neighbor to neighbor.
+              Need volunteers or want to adopt? KindConnect.🐶
+              Have extra home-cooked food or made too much? KindConnect.🍕
+              Need help around the house or want to help someone fix their sink? KindConnect.🛠️
+              If you’d like to volunteer for rides or other needs, we’d love to hear from you!❤️`}
+           </p>
         </article>
+
 
         {/* Empty feed placeholder */}
         <div className="postList">

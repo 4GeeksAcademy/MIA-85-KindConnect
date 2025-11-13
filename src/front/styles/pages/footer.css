@@ -1,0 +1,89 @@
+.kc-footer__bar{
+  background:#ffffff;
+  color:var(--muted);
+  border-top:1px solid var(--border);
+  padding-bottom: 0px;
+  margin: 0px;
+}
+.kc-footer {
+  background: #ffffff !important;
+  display: flex;
+  justify-self: flex-end;
+}
+
+.kc-footer__inner{
+  max-width:1200px; 
+  margin:0 auto; 
+  padding:18px 16px;
+  display:grid; 
+  grid-template-columns:1fr 1fr 1fr;
+  gap:16px;
+}
+
+/* Left/center/right columns */
+.kc-footer__col{ display:grid; gap:10px; align-content:start; }
+.kc-footer__miniLink{ font-weight:700; text-decoration:none; color:var(--ink); }
+.kc-footer__miniLink:hover{ text-decoration:underline; }
+.kc-footer__label{ font-weight:800; font-size:14px; color:var(--muted); }
+.kc-footer__link{ color:var(--ink); text-decoration:none; }
+.kc-footer__link:hover{ text-decoration:underline; }
+.kc-footer__section{ display:grid; gap:6px; }
+.kc-footer__address{ font-weight:600; }
+
+/* Center address block alignment */
+.kc-footer__col--center{
+  justify-self:center; text-align:center; width:max-content;
+}
+.kc-footer__col--center .kc-footer__label{
+  display:block; margin:0 auto 6px;
+}
+.kc-footer__col--center .kc-footer__address{ margin:0 auto; }
+
+/* Right column: “Get our app” above badges, centered to badges width */
+.kc-footer__col--right{
+  justify-self:end; text-align:center; width:max-content;
+}
+.kc-footer__col--right .kc-footer__label{
+  display:block; margin:0 auto 6px;
+}
+.kc-footer__col--right .stores{
+  display:inline-flex; gap:10px; justify-content:center;
+}
+
+/* Social icons (brand colors) */
+.kc-footer__social{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-start; }
+.soc{
+  width:34px; height:34px; border-radius:50%;
+  display:inline-flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:800; font-size:12px; text-decoration:none;
+}
+.soc--fb{ background:#1877F2; }
+.soc--x{ background:#000; }
+.soc--ig{ background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+.soc--sc{ background:#FFFC00; color:#000; }
+.soc--tt{ background:#000; box-shadow:0 0 0 2px #25F4EE inset; }
+.soc--tg{ background:#229ED9; }
+
+/* Store badges */
+.stores{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.storeBadge{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 12px; border-radius:12px; text-decoration:none; font-weight:800;
+  border:1px solid var(--border); background:#fff; color:var(--ink);
+}
+.storeBadge--apple{ background:#000000b6; color:#fff; border-color:#000; }
+.storeBadge--play{ background:#fff; color:#0b1226; }
+.storeIcon{ width:18px; height:18px; flex:0 0 18px; }
+
+/* Bottom copyright bar */
+.kc-footer__bar{
+  border-top:1px solid var(--border);
+  background:var(--surface); color:var(--muted);
+  text-align:center; padding:10px 12px; font-size:14px;
+}
+
+/* Responsive stacking */
+@media (max-width: 900px){
+  .kc-footer__inner{ grid-template-columns:1fr; text-align:center; }
+  .kc-footer__col--right{ justify-self:center; }
+}
