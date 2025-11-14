@@ -5,10 +5,10 @@ function CreatePost() {
   const [zipcode, setZipcode] = useState("");
   const [activeTab, setActiveTab] = useState("Need");
   const [filter, setFilter] = useState("All");
-  const [posts] = useState([]); 
+  const [posts] = useState([]);
 
   const handleZipChange = (e) => {
-    setZipcode(e.target.value); 
+    setZipcode(e.target.value);
   };
 
   const handleZipSubmit = (e) => {
@@ -49,17 +49,15 @@ function CreatePost() {
       <div className="text-center mb-4">
         <div className="btn-group" role="group">
           <button
-            className={`btn ${
-              activeTab === "Need" ? "btn-primary" : "btn-outline-primary"
-            }`}
+            className={`btn ${activeTab === "Need" ? "btn-primary" : "btn-outline-primary"
+              }`}
             onClick={() => setActiveTab("Need")}
           >
             Need
           </button>
           <button
-            className={`btn ${
-              activeTab === "Donate" ? "btn-primary" : "btn-outline-primary"
-            }`}
+            className={`btn ${activeTab === "Donate" ? "btn-primary" : "btn-outline-primary"
+              }`}
             onClick={() => setActiveTab("Donate")}
           >
             Donate
