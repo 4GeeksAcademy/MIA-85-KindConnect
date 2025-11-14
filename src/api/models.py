@@ -5,10 +5,15 @@ from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime, date as datetime_date
 from typing import List
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.sql import func
+from enum import Enum
 
 db = SQLAlchemy()
 
 
+# =========================
+# User
+# =========================
 class User(db.Model):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True)
@@ -42,20 +47,18 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
             "phone_number": self.phone_number,
-            "date_of_birth": (
-                self.date_of_birth.strftime(
-                    "%Y-%m-%d") if self.date_of_birth else None
-            ),
+            "date_of_birth": self.date_of_birth.strftime("%Y-%m-%d") if self.date_of_birth else None,
             "is_active": self.is_active,
             "is_verified": self.is_verified,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
-    def set_password(self, pwd):
+    # password & security helpers
+    def set_password(self, pwd: str):
         self.password = generate_password_hash(pwd)
 
-    def check_password(self, pwd):
+    def check_password(self, pwd: str) -> bool:
         return check_password_hash(self.password, pwd)
 
     def set_security_answer(self, answer):
@@ -71,7 +74,7 @@ class User(db.Model):
         self.last_name = last_name
         self.username = username
         self.email = email
-        self.password = password
+        self.set_password(password)
         if phone_number:
             self.phone_number = phone_number
         if date_of_birth:
@@ -85,11 +88,24 @@ class User(db.Model):
         db.session.commit()
 
 
+class PostCategory(Enum):
+    FOOD_DONATIONS = "food"
+    ANIMAL_SHELTER = "animals"
+    HONEY_DOS = "honey-dos"
+
+
 class Post(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     author: str = db.Column(db.String(80), default="anon")
     body: str = db.Column(db.Text, nullable=False)
-    created_at: datetime = db.Column(db.DateTime, default=datetime)
+    media_urls = db.Column(db.JSON, nullable=True)   # list of strings
+    type = db.Column(db.String(10), nullable=False)  # "wanted" | "offer"
+    category = db.Column(db.Enum(PostCategory), nullable=False)
+    status = db.Column(db.String(12), nullable=False, default="active")
+    created_at: datetime = db.Column(db.DateTime, server_default=func.now())
+    zip_code = db.Column(db.String(10), index=True)
+    lat = db.Column(db.Float())
+    lon = db.Column(db.Float())
     replies: Mapped[List["Reply"]] = db.relationship(
         "Reply", backref="post", cascade="all, delete-orphan")  # type: ignore
     favorites = db.relationship(
@@ -100,13 +116,29 @@ class Post(db.Model):
             "id": self.id,
             "author": self.author,
             "body": self.body,
+            "media_urls": self.media_urls or [],
+            "status": self.status,
+            "zip_code": self.zip_code,
+            "lat": self.lat,
+            "lon": self.lon,
+            "category": self.category.value,
+            "type": self.type,
             "created_at": self.created_at.isoformat()
         }
 
-    def __init__(self, author, body):
+    def __init__(self, author, body, type, category, zip_code=None, lat=None, lon=None, media_urls=None):
         self.author = author
         self.body = body
+        self.zip_code = zip_code
+        self.lat = lat
+        self.lon = lon
+        self.type = type
+        self.category = category
         db.session.add(self)
+        db.session.commit()
+
+    def close_post(self):
+        self.status = "closed"
         db.session.commit()
 
 

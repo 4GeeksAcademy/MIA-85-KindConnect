@@ -1,26 +1,34 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
+import os
+import requests
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Post, Reply, Favorite
-from api.utils import generate_sitemap, APIException
+from .models import db, User, Post, Reply, Favorite, PostCategory
+from .utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy import select
-from werkzeug.security import generate_password_hash, check_password_hash
 from typing import Dict
-
-api = Blueprint('api', __name__)
-
-# Allow CORS requests to this API
-CORS(api)
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 
 
-@api.route('/hello', methods=['POST', 'GET'])
+api = Blueprint("api", __name__)
+CORS(api)  # Allow CORS requests to this API
+NINJA_API_KEY = os.getenv("NINJA_API_KEY")
+
+# Health check
+# ---------------------------------------------------------------------
+
+
+@api.route("/health", methods=["GET"])
+def health():
+    return jsonify({"ok": True, "service": "kindconnect-api"}), 200
+
+
+# Hello (sample)
+# ---------------------------------------------------------------------
+@api.route("/hello", methods=["GET", "POST"])
 def handle_hello():
     response_body = {
-        "message": "Hello! I'm a message that came from the backend."
-    }
+        "message": "Hello! I'm a message that came from the backend."}
     return jsonify(response_body), 200
 
 
@@ -28,6 +36,14 @@ def handle_hello():
 def list_posts():
     device_id = request.args.get("device_id", "")
     items = Post.query.order_by(Post.created_at.desc()).all()  # type: ignore
+    zip_code = request.args.get("zip_code", "").strip() or None
+    zip_filter = zip_code if zip_code else None
+
+    q = Post.query
+    if zip_filter:
+        q = q.filter(Post.zip_code == zip_filter)
+    items = q.order_by(Post.created_at.desc()).all()  # type: ignore
+    return jsonify([i.serialize() for i in items]), 200
     out = []
     for p in items:
         fav_count = len(p.favorites)
@@ -46,17 +62,57 @@ def list_posts():
     return jsonify(out), 200
 
 
+@jwt_required()
 @api.post("/posts")
 def create_post():
     data = request.get_json() or {}
     body = (data.get("body") or "").strip()
     author = (data.get("author") or "anon").strip() or "anon"
+    zip_code = (data.get("zip_code") or "").strip() or None
+    type = data.get("type", None)
+    category = data.get("category", None)
+    if type is None or (type != "needing" and type != "giving"):
+        return jsonify({"error": "either giving or needing is required"}), 400
+    if category:
+        try:
+            category = PostCategory(category)
+        except ValueError as error:
+            category = None
+    if category is None:
+        return jsonify({"error": "either food, honey-dos, or animals is required"}), 400
     if not body:
         return jsonify({"error": "body required"}), 400
-    p = Post(author=author, body=body)
+
+    # basic format check
+    if zip_code and not (len(zip_code) == 5 and zip_code.isdigit()):
+        return jsonify({"error": "invalid zip format"}), 400
+
+    url = f"https://api.api-ninjas.com/v1/zipcode?zip={zip_code}"
+    headers = {"X-Api-Key": NINJA_API_KEY}
+
+    r = requests.get(url, headers=headers)
+
+    if r.status_code != 200:
+        return jsonify({"error": "ZIP lookup failed"}), 400
+
+    results = r.json()
+    if not results:  # empty list means invalid ZIP
+        return jsonify({"error": "invalid zip"}), 400
+    lat = results[0]["lat"]
+    lon = results[0]["lon"]
+
+    p = Post(
+        author=author,
+        body=body,
+        zip_code=zip_code,
+        lat=lat,
+        lon=lon,
+        category=category,
+        type=type
+    )
     db.session.add(p)
     db.session.commit()
-    return jsonify({"id": p.id}), 201
+    return jsonify({"id": p.id, "zip_code": p.zip_code}), 201
 
 
 @api.get("/posts/<int:pid>")
@@ -137,31 +193,38 @@ def handle_signup():
     if not date_of_birth:
         date_of_birth = None
 
-    if not all([first_name, last_name, username, email, password, security_question, security_answer]):
+    if not all(
+        [
+            first_name,
+            last_name,
+            username,
+            email,
+            password,
+            security_question,
+            security_answer,
+        ]
+    ):
         return jsonify({"message": "Missing required fields..."}), 400
 
-    # Check for existing user
+    # Check for existing user by email OR username
     existing_user = db.session.scalars(
         select(User).where((User.email == email) | (User.username == username))
     ).one_or_none()
     if existing_user:
         return jsonify({"message": "User with this email or username already exists..."}), 400
 
-    hashed_password = generate_password_hash(password)
-
     new_user = User(
         first_name=first_name,
         last_name=last_name,
         username=username,
         email=email,
-        password=hashed_password,
+        password=password,
         phone_number=phone_number,
         date_of_birth=date_of_birth,
         is_active=True,
         is_verified=False,
-        security_question=security_question
+        security_question=security_question,
     )
-
     new_user.set_password(password)
     new_user.set_security_answer(security_answer)
 
@@ -171,9 +234,9 @@ def handle_signup():
     return jsonify({"message": "User created successfully!"}), 201
 
 
-@api.route('/resetPassword/question', methods=['POST'])
+@api.route("/resetPassword/question", methods=["POST"])
 def getSecurityQuestion():
-    body = request.json or {}
+    body = request.get_json() or {}
     email = body.get("email")
 
     user = db.session.scalars(select(User).where(
@@ -184,12 +247,14 @@ def getSecurityQuestion():
     return jsonify({"security_question": user.security_question}), 200
 
 
-@api.route('/resetPassword/verify', methods=['POST'])
+@api.route("/resetPassword/verify", methods=["POST"])
 def verifyResetPassword():
-    body = request.json or {}
+    body = request.get_json() or {}
     email = body.get("email")
     answer = body.get("security_answer")
     new_password = body.get("new_password")
+    if not new_password:
+        return jsonify({"message": "Missing required fields"}), 400
 
     if not all([email, answer, new_password]):
         return jsonify({"message": "Missing required fields"}), 400
@@ -208,7 +273,7 @@ def verifyResetPassword():
     return jsonify({"message": "Password reset successfully!"}), 200
 
 
-@api.route('/login', methods=['POST'])
+@api.route("/login", methods=["POST"])
 def handle_login():
     body = request.json or {}
     email = body.get("email")
@@ -228,16 +293,14 @@ def handle_login():
     user_token = create_access_token(identity=str(user.id))
     response_body = {
         "token": user_token,
-        "user": user.serialize() if hasattr(user, "serialize") else {
-            "id": user.id,
-            "email": user.email,
-            "username": user.username
-        }
+        "user": user.serialize()
+        if hasattr(user, "serialize")
+        else {"id": user.id, "email": user.email, "username": user.username},
     }
     return jsonify(response_body), 201
 
 
-@api.route('/users', methods=['GET'])
+@api.route("/users", methods=["GET"])
 def get_all_users():
     users = db.session.scalars(select(User)).all()
     if not users:
@@ -247,10 +310,9 @@ def get_all_users():
     return jsonify(users_list), 200
 
 
-@api.route('/profile', methods=['GET'])
+@api.route("/profile", methods=["GET"])
 @jwt_required()
 def get_profile():
-    from flask_jwt_extended import get_jwt_identity
     user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
     if not user:
@@ -258,7 +320,7 @@ def get_profile():
     return jsonify(user.serialize()), 200
 
 
-@api.route('/profile', methods=['PUT'])
+@api.route("/profile", methods=["PUT"])
 @jwt_required()
 def update_profile():
     user_id = get_jwt_identity()

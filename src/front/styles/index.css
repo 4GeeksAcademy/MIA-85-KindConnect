@@ -1,4 +1,3 @@
-
 @import "./tokens.css";
 @import "./base.css";
 
@@ -13,3 +12,23 @@
 @import "./pages/footer.css";
 @import "./pages/landing.css";
 
+.wm {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-weight: 600;
+  letter-spacing: 0.15px;
+}
+.wm__k,
+.wm__rest {
+  line-height: 1;
+}
+.wm__c {
+  font-size: 1.25em;
+  line-height: 1;
+}
+.wm__heart {
+  font-size: 1.25em;
+  line-height: 1;
+  color: #e11d48;
+} /* big + red */
