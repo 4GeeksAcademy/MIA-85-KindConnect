@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import Wordmark from "../components/Wordmark.jsx";
 import logo from "../assets/img/logopng.png";
 export const Navbar = () => {
 	const { store, dispatch } = useGlobalReducer();

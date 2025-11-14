@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import 'bootstrap';
-
+import Wordmark from "../components/Wordmark.jsx";
 function CreatePost() {
   const [zipcode, setZipcode] = useState("");
   const [activeTab, setActiveTab] = useState("Need");

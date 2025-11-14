@@ -1,26 +1,28 @@
 import React, { useMemo, useState } from "react";
-import Hero from "../components/Hero.jsx";                       
-import CreatePost from "../components/CreatePost.jsx"; // simple post composer overlay
+import Hero from "../components/Hero.jsx";
+import CreatePost from "../components/CreatePost.jsx";
 
 export default function Honeydo() {
   const [zip, setZip] = useState("");
-  const [filter, setFilter] = useState("wanted");     // "wanted" | "offers"
+  const [filter, setFilter] = useState("wanted");   // "wanted" | "offers"
   const [openCreate, setOpenCreate] = useState(false);
 
-  // no data yet
+  // demo: no data yet
   const posts = [];
   const filtered = useMemo(() => posts.filter(p => p.type === filter), [posts, filter]);
 
   const handleCreateSubmit = (payload) => {
-    // TODO: replace with API call
+    // TODO: call /api/honey-do on your backend
     console.log("new post:", payload);
   };
 
   return (
     <main className="honey layout">
+      {/* page hero (title + description + emoji inside <Hero/>) */}
       <Hero />
+
       <div className="honey__grid">
-        {/* LEFT SIDEBAR */}
+        {/* LEFT: search + create */}
         <aside className="honey__side">
           <section className="hc hc--zip" aria-labelledby="zipLabel">
             <label id="zipLabel" className="hc__label">Find help near you</label>
@@ -31,7 +33,6 @@ export default function Honeydo() {
               onChange={(e) => setZip(e.target.value)}
               inputMode="numeric"
               pattern="[0-9]*"
-              aria-describedby="zipHelp"
             />
             <button className="hc__btn" type="button">See nearby posts</button>
           </section>
@@ -49,7 +50,7 @@ export default function Honeydo() {
           </section>
         </aside>
 
-        {/* CENTER FEED */}
+        {/* CENTER: feed */}
         <section className="honey__feed">
           <nav className="honey__tabs" aria-label="Post filters">
             <button
@@ -78,6 +79,7 @@ export default function Honeydo() {
         </section>
       </div>
 
+      {/* simple compose overlay */}
       <CreatePost
         open={openCreate}
         onClose={() => setOpenCreate(false)}

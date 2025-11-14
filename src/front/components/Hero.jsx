@@ -1,5 +1,5 @@
 import React from "react";
-
+import Wordmark from "../components/Wordmark.jsx";
 export default function Hero() {
   return (
     <header className="honey__hero">

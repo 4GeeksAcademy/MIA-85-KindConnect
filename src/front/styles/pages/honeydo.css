@@ -1,86 +1,114 @@
+.honey.layout{
+  position: relative;   
+  z-index: 0;
+  min-height: 100%;     
+  background: transparent;
+}
 
-.honey.layout{ background:var(--surface-2); color:var(--ink); }
-
+.honey.layout::before{
+  content: "";
+  position: absolute;   
+  inset: 0;             
+  z-index: -1;          
+  background:
+    radial-gradient(transparent 80%, rgba(255,255,255,.6) 100%),
+    url("../../assets/img/home.png") center/cover no-repeat;
+  opacity: .14;
+  pointer-events: none;
+}
+/* ---------- hero (centered) ---------- */
 .honey__hero{
-  padding: 24px 16px;
   max-width: 900px;
   margin: 0 auto;
   text-align: center;
+  padding: 24px 16px;
 }
 .honey__title{
-  display: inline-flex; align-items: center; justify-content: center;
-  gap: 10px; margin: 0 0 6px; font-size: 32px; font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 800;
 }
 .honey__desc{
-  margin: 0 auto; max-width: 680px; color: var(--muted);
+  margin: 0 auto;
+  max-width: 680px;
+  color: rgba(1, 14, 22, 0.714);
 }
 
-/* Grid */
+/* ---------- grid ---------- */
 .honey__grid{
-  max-width:1100px; margin:8px auto 24px; padding:0 16px;
-  display:grid; grid-template-columns:240px 1fr; gap:16px;
+  max-width: 1100px;
+  margin: 8px auto 24px;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
 }
 @media (max-width: 900px){
-  .honey__grid{ grid-template-columns:1fr; }
+  .honey__grid{ grid-template-columns: 1fr; }
 }
 
-/* Sidebar cards */
+/* ---------- sidebar cards ---------- */
 .hc{
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:var(--radius); padding:12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
 }
-.hc + .hc{ margin-top:12px; }
-.hc__label{ font-weight:700; margin-bottom:6px; display:block; }
+.hc + .hc{ margin-top: 12px; }
+.hc__label{ font-weight: 700; margin-bottom: 6px; display: block; }
 .hc__input{
-  width:100%; padding:10px 12px; border:1px solid var(--border);
-  border-radius:10px; background:#fff; font:inherit;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
 }
 .hc__btn{
-  margin-top:8px; padding:10px 12px; border-radius:10px;
-  border:1px solid var(--border); background:#fff; cursor:pointer; font-weight:600;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
 }
 .hc__btn--primary{
-  background:var(--primary); border-color:var(--primary); color:var(--primary-ink); font-weight:800;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
+  font-weight: 800;
 }
-.hc__help{ margin:8px 0 0; color:var(--muted); font-size:13px; }
-.hc__h2{ margin:0 0 4px; font-size:16px; font-weight:800; }
+.hc__help{ margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+.hc__h2{ margin: 0 0 4px; font-size: 16px; font-weight: 800; }
 
-/* Feed */
+/* ---------- feed ---------- */
 .honey__tabs{ display:flex; gap:8px; margin-bottom:10px; }
 .honey__tab{
-  padding:8px 12px; border:1px solid var(--border); background:#fff;
-  border-radius:999px; cursor:pointer; color:var(--muted); font-weight:600;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
 }
 .honey__tab.is-active{
-  background:var(--primary); color:var(--primary-ink); border-color:var(--primary); font-weight:800;
+  background: var(--primary);
+  color: var(--primary-ink);
+  border-color: var(--primary);
+  font-weight: 800;
 }
 .honey__list{ list-style:none; margin:0; padding:0; display:grid; gap:10px; }
 .honey__empty{
-  text-align:center; color:var(--muted); padding:18px;
-  border:1px dashed var(--border); border-radius:10px; background:#fff;
-}
-
-/* Simple modal (chooser) */
-.modal{
-  position:fixed; inset:0; z-index:50;
-  background:rgba(15,23,42,.45); backdrop-filter:blur(2px);
-  display:grid; place-items:center;
-}
-.modal__panel{
-  width:min(520px, 92%); background:#fff; color:var(--ink);
-  border:1px solid var(--border); border-radius:var(--radius);
-  padding:14px; box-shadow:0 10px 28px rgba(2,48,71,.2);
-}
-.modal__title{ margin:0 0 4px; font-size:20px; font-weight:800; }
-.modal__sub{ margin:0 0 10px; color:var(--muted); }
-.modal__choices{ display:grid; gap:8px; margin-bottom:8px; }
-.choice{
-  text-align:left; padding:10px 12px; border:1px solid var(--border);
-  border-radius:12px; background:#fff; cursor:pointer;
-}
-.choice:hover{ background:#f8fafc; }
-.choice__sub{ display:block; color:var(--muted); font-size:12px; margin-top:4px; }
-.modal__close{
-  display:inline-flex; gap:6px; align-items:center;
-  padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:#fff; cursor:pointer; font-weight:600;
+  text-align: center;
+  color: var(--muted);
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: #fff;
 }

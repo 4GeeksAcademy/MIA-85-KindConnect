@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import "../styles/pages/home.css";
+import Wordmark from "../components/Wordmark.jsx";
 export const Home = () => {
   const { store, dispatch } = useGlobalReducer();
 
