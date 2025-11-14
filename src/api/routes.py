@@ -1,23 +1,23 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
-""" API routes: auth, users, and Honey Do endpoints """
-
-from api.models import db, User, Post, Reply, Favorite
+import os
+import requests
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.utils import generate_sitemap, APIException
+from .models import db, User, Post, Reply, Favorite, PostCategory
+from .utils import generate_sitemap, APIException
 from flask_cors import CORS
 from sqlalchemy import select
 from typing import Dict
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 
 
 api = Blueprint("api", __name__)
 CORS(api)  # Allow CORS requests to this API
-
+NINJA_API_KEY = os.getenv("NINJA_API_KEY")
 
 # Health check
 # ---------------------------------------------------------------------
+
+
 @api.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "service": "kindconnect-api"}), 200
@@ -36,6 +36,14 @@ def handle_hello():
 def list_posts():
     device_id = request.args.get("device_id", "")
     items = Post.query.order_by(Post.created_at.desc()).all()  # type: ignore
+    zip_code = request.args.get("zip_code", "").strip() or None
+    zip_filter = zip_code if zip_code else None
+
+    q = Post.query
+    if zip_filter:
+        q = q.filter(Post.zip_code == zip_filter)
+    items = q.order_by(Post.created_at.desc()).all()  # type: ignore
+    return jsonify([i.serialize() for i in items]), 200
     out = []
     for p in items:
         fav_count = len(p.favorites)
@@ -54,17 +62,57 @@ def list_posts():
     return jsonify(out), 200
 
 
+@jwt_required()
 @api.post("/posts")
 def create_post():
     data = request.get_json() or {}
     body = (data.get("body") or "").strip()
     author = (data.get("author") or "anon").strip() or "anon"
+    zip_code = (data.get("zip_code") or "").strip() or None
+    type = data.get("type", None)
+    category = data.get("category", None)
+    if type is None or (type != "needing" and type != "giving"):
+        return jsonify({"error": "either giving or needing is required"}), 400
+    if category:
+        try:
+            category = PostCategory(category)
+        except ValueError as error:
+            category = None
+    if category is None:
+        return jsonify({"error": "either food, honey-dos, or animals is required"}), 400
     if not body:
         return jsonify({"error": "body required"}), 400
-    p = Post(author=author, body=body)
+
+    # basic format check
+    if zip_code and not (len(zip_code) == 5 and zip_code.isdigit()):
+        return jsonify({"error": "invalid zip format"}), 400
+
+    url = f"https://api.api-ninjas.com/v1/zipcode?zip={zip_code}"
+    headers = {"X-Api-Key": NINJA_API_KEY}
+
+    r = requests.get(url, headers=headers)
+
+    if r.status_code != 200:
+        return jsonify({"error": "ZIP lookup failed"}), 400
+
+    results = r.json()
+    if not results:  # empty list means invalid ZIP
+        return jsonify({"error": "invalid zip"}), 400
+    lat = results[0]["lat"]
+    lon = results[0]["lon"]
+
+    p = Post(
+        author=author,
+        body=body,
+        zip_code=zip_code,
+        lat=lat,
+        lon=lon,
+        category=category,
+        type=type
+    )
     db.session.add(p)
     db.session.commit()
-    return jsonify({"id": p.id}), 201
+    return jsonify({"id": p.id, "zip_code": p.zip_code}), 201
 
 
 @api.get("/posts/<int:pid>")
@@ -170,6 +218,7 @@ def handle_signup():
         last_name=last_name,
         username=username,
         email=email,
+        password=password,
         phone_number=phone_number,
         date_of_birth=date_of_birth,
         is_active=True,
@@ -297,113 +346,3 @@ def update_profile():
 
     db.session.commit()
     return jsonify(user.serialize()), 200
-
-
-# ---------------------------------------------------------------------
-# Honey Do: CRUD
-# ---------------------------------------------------------------------
-# @api.route("/honeydo/posts", methods=["GET"])
-# def list_honey_posts():
-#     """List posts with optional filters."""
-#     q_type = request.args.get("type")  # wanted | offer | None
-#     q_zip = request.args.get("zip")
-#     limit = int(request.args.get("limit", 20))
-#     offset = int(request.args.get("offset", 0))
-
-#     query = HoneyPost.query
-#     if q_type in ("wanted", "offer"):
-#         query = query.filter(HoneyPost.type == q_type)
-#     if q_zip:
-#         query = query.filter(HoneyPost.zip == q_zip)
-
-#     total = query.count()
-#     items = (
-#         query.order_by(HoneyPost.created_at.desc())
-#         .limit(limit)
-#         .offset(offset)
-#         .all()
-#     )
-#     return (
-#         jsonify(
-#             {
-#                 "items": [p.serialize() for p in items],
-#                 "total": total,
-#                 "limit": limit,
-#                 "offset": offset,
-#             }
-#         ),
-#         200,
-#     )
-
-
-# @api.route("/honeydo/posts", methods=["POST"])
-# def create_honey_post():
-#     """Create a new Honey Do post."""
-#     data = request.get_json(silent=True) or {}
-#     p_type = data.get("type")
-#     title = (data.get("title") or "").strip()
-#     zipc = (data.get("zip") or "").strip()
-#     desc = data.get("description")
-#     media = data.get("media_urls", [])
-
-#     if p_type not in ("wanted", "offer"):
-#         return jsonify({"message": "type must be 'wanted' or 'offer'"}), 422
-#     if len(title) < 4:
-#         return jsonify({"message": "title must be at least 4 characters"}), 422
-#     if not zipc:
-#         return jsonify({"message": "zip is required"}), 422
-
-#     post = HoneyPost(
-#         user_id=None,
-#         type=p_type,
-#         title=title,
-#         description=desc,
-#         zip=zipc,
-#         media_urls=media,
-#         status="active",
-#     )
-#     db.session.add(post)
-#     db.session.commit()
-#     return jsonify({"post": post.serialize()}), 201
-
-
-# @api.route("/honeydo/posts/<int:post_id>", methods=["GET"])
-# def get_honey_post(post_id: int):
-#     post = db.session.get(HoneyPost, post_id)
-#     if not post:
-#         return jsonify({"message": "Not found"}), 404
-#     return jsonify({"post": post.serialize()}), 200
-
-
-# @api.route("/honeydo/posts/<int:post_id>", methods=["PATCH"])
-# def update_honey_post(post_id: int):
-#     post = db.session.get(HoneyPost, post_id)
-#     if not post:
-#         return jsonify({"message": "Not found"}), 404
-
-#     data = request.get_json(silent=True) or {}
-
-#     if "type" in data:
-#         if data["type"] not in ("wanted", "offer"):
-#             return jsonify({"message": "invalid type"}), 422
-#         post.type = data["type"]
-
-#     for k in ("title", "description", "zip", "status"):
-#         if k in data and isinstance(data[k], str):
-#             setattr(post, k, data[k].strip())
-
-#     if "media_urls" in data:
-#         post.media_urls = data["media_urls"]
-
-#     db.session.commit()
-#     return jsonify({"post": post.serialize()}), 200
-
-
-# @api.route("/honeydo/posts/<int:post_id>", methods=["DELETE"])
-# def delete_honey_post(post_id: int):
-#     post = db.session.get(HoneyPost, post_id)
-#     if not post:
-#         return jsonify({"message": "Not found"}), 404
-#     db.session.delete(post)
-#     db.session.commit()
-#     return "", 204
