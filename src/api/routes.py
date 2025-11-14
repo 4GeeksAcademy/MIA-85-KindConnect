@@ -1,14 +1,15 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
+import os
+import requests
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Post, Reply, Favorite
-from api.utils import generate_sitemap, APIException
+from .models import db, User, Post, Reply, Favorite
+from .utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy import select
 from werkzeug.security import generate_password_hash, check_password_hash
 from typing import Dict
+
+API_NINJAS_KEY = os.getenv("API_NINJAS_KEY")
 
 api = Blueprint('api', __name__)
 
@@ -28,6 +29,14 @@ def handle_hello():
 def list_posts():
     device_id = request.args.get("device_id", "")
     items = Post.query.order_by(Post.created_at.desc()).all()  # type: ignore
+    zip_code = request.args.get("zip_code", "").strip() or None
+    zip_filter = zip_code if zip_code else None
+
+    q = Post.query
+    if zip_filter:
+        q = q.filter(Post.zip_code == zip_filter)
+    items = q.order_by(Post.created_at.desc()).all()  # type: ignore
+
     out = []
     for p in items:
         fav_count = len(p.favorites)
@@ -51,12 +60,23 @@ def create_post():
     data = request.get_json() or {}
     body = (data.get("body") or "").strip()
     author = (data.get("author") or "anon").strip() or "anon"
+    zip_code = (data.get("zip_code") or "").strip() or None
+
     if not body:
         return jsonify({"error": "body required"}), 400
-    p = Post(author=author, body=body)
+
+    # basic format check
+    if zip_code and not (len(zip_code) == 5 and zip_code.isdigit()):
+        return jsonify({"error": "invalid zip format"}), 400
+
+    # external validation with API Ninjas
+    if zip_code and not validate_zip_with_ninjas(zip_code):
+        return jsonify({"error": "zip not found"}), 400
+
+    p = Post(author=author, body=body, zip_code=zip_code)
     db.session.add(p)
     db.session.commit()
-    return jsonify({"id": p.id}), 201
+    return jsonify({"id": p.id, "zip_code": p.zip_code}), 201
 
 
 @api.get("/posts/<int:pid>")

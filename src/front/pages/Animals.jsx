@@ -1,122 +1,89 @@
-import React, { useState } from "react";
-import 'bootstrap';
+import React, { useMemo, useState } from "react";
+import Dog from "../components/Dog.jsx";
+import CreatePost from "../components/CreatePost.jsx"; // simple post composer overlay
 
-function CreatePost() {
-  const [zipcode, setZipcode] = useState("");
-  const [activeTab, setActiveTab] = useState("Need");
-  const [filter, setFilter] = useState("All");
-  const [posts] = useState([]);
+export default function Animals() {
+  const [zip, setZip] = useState("");
+  const [filter, setFilter] = useState("wanted");     // "wanted" | "offers"
+  const [openCreate, setOpenCreate] = useState(false);
 
-  const handleZipChange = (e) => {
-    setZipcode(e.target.value);
-  };
+  // no data yet
+  const posts = [];
+  const filtered = useMemo(() => posts.filter(p => p.type === filter), [posts, filter]);
 
-  const handleZipSubmit = (e) => {
-    e.preventDefault();
-    alert(`Searching near ZIP code: ${zipcode}`);
-  };
-
-  const handleCreatePost = () => {
-    alert("Open Create Post Form");
+  const handleCreateSubmit = (payload) => {
+    // TODO: replace with API call
+    console.log("new post:", payload);
   };
 
   return (
-    <div className="container-fluid mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <div className="flex-grow-1 text-center">
-          <form
-            onSubmit={handleZipSubmit}
-            className="d-inline-flex align-items-center justify-content-center"
-          >
+    <main className="honey layout">
+      <Dog />
+      <div className="honey__grid">
+        {/* LEFT SIDEBAR */}
+        <aside className="honey__side">
+          <section className="hc hc--zip" aria-labelledby="zipLabel">
+            <label id="zipLabel" className="hc__label">Find help near you</label>
             <input
-              type="text"
-              className="form-control me-2"
-              placeholder="Enter ZIP code"
-              style={{ width: "200px" }}
-              value={zipcode}
-              onChange={handleZipChange}
+              className="hc__input"
+              placeholder="enter your zipcode"
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              aria-describedby="zipHelp"
             />
-            <button type="submit" className="btn btn-success">
-              Add ZIP Code to narrow down search
+            <button className="hc__btn" type="button">See nearby posts</button>
+          </section>
+
+          <section className="hc hc--create">
+            <h2 className="hc__h2">Create your post</h2>
+            <p className="hc__help">Need a hand or have something to offer? POST!</p>
+            <button
+              className="hc__btn hc__btn--primary"
+              type="button"
+              onClick={() => setOpenCreate(true)}
+            >
+              Create post
             </button>
-          </form>
-        </div>
-        <button className="btn btn-primary me-3" onClick={handleCreatePost}>
-          + Create Post
-        </button>
+          </section>
+        </aside>
+
+        {/* CENTER FEED */}
+        <section className="honey__feed">
+          <nav className="honey__tabs" aria-label="Post filters">
+            <button
+              className={`honey__tab ${filter === "wanted" ? "is-active" : ""}`}
+              onClick={() => setFilter("wanted")}
+              type="button"
+            >
+              Wanted
+            </button>
+            <button
+              className={`honey__tab ${filter === "offers" ? "is-active" : ""}`}
+              onClick={() => setFilter("offers")}
+              type="button"
+            >
+              Offers
+            </button>
+          </nav>
+
+          <ul className="honey__list" aria-live="polite">
+            {filtered.length === 0 && (
+              <li className="honey__empty">
+                No posts yet. Try a different ZIP or create your post.
+              </li>
+            )}
+          </ul>
+        </section>
       </div>
 
-      <div className="text-center mb-4">
-        <div className="btn-group" role="group">
-          <button
-            className={`btn ${activeTab === "Need" ? "btn-primary" : "btn-outline-primary"
-              }`}
-            onClick={() => setActiveTab("Need")}
-          >
-            Need
-          </button>
-          <button
-            className={`btn ${activeTab === "Donate" ? "btn-primary" : "btn-outline-primary"
-              }`}
-            onClick={() => setActiveTab("Donate")}
-          >
-            Donate
-          </button>
-        </div>
-      </div>
-
-      <div className="row">
-        <div className="col-md-3 mb-4">
-          <div
-            className="card p-3 shadow-sm"
-            style={{ backgroundColor: "#d9fdd3" }}
-          >
-            <h5 className="card-title text-center mb-3">Filter</h5>
-            <div className="d-grid gap-2">
-              <button
-                className="btn btn-light border"
-                onClick={() => setFilter("Animals")}
-              >
-                Animals
-              </button>
-              <button
-                className="btn btn-light border"
-                onClick={() => setFilter("Honey Do's")}
-              >
-                Honey Do's
-              </button>
-              <button
-                className="btn btn-light border"
-                onClick={() => setFilter("Food")}
-              >
-                Food
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-9 text-center">
-          {posts.length === 0 ? (
-            <h4 className="text-muted mt-5">No posts yet</h4>
-          ) : (
-            posts.map((post) => <Post key={post.id} post={post} />)
-          )}
-        </div>
-      </div>
-    </div>
+      <CreatePost
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onSubmit={handleCreateSubmit}
+        defaultType={filter === "offers" ? "offer" : "wanted"}
+      />
+    </main>
   );
 }
-
-function Post({ post }) {
-  return (
-    <div className="card mb-3 shadow-sm">
-      <div className="card-body">
-        <h5 className="card-title">{post.username}</h5>
-        <p className="card-text">{post.text}</p>
-      </div>
-    </div>
-  );
-}
-
-
-export default CreatePost;

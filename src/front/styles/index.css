@@ -1,4 +1,3 @@
-
 @import "./tokens.css";
 @import "./base.css";
 
@@ -11,5 +10,3 @@
 /* Pages */
 @import "./pages/honeydo.css";
 @import "./pages/footer.css";
-@import "./pages/landing.css";
-

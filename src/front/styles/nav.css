@@ -1,34 +1,180 @@
-.header{
-  position: sticky; top: 0; z-index: 10;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; padding: 12px 16px;
-  background: #fff; border-bottom: 1px solid var(--border);
+.navbar .container {
+  position: relative;
+  min-height: 64px;
 }
 
-.brand__link{
-  display: inline-flex; align-items: center; gap: 10px;
-  text-decoration: none; color: var(--ink); 
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
   font-weight: 800;
 }
 
 /* accept either class name you’ve used */
-.brand__logo, .brand__img{
-  width: 50px; height: 50px; object-fit: contain; border-radius: 8px;
+.brand__logo,
+.brand__img {
+  width: clamp(48px, 4vw + 32px, 96px);
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 /* Wordmark: KindC❤️nnect */
-.wm{ display:inline-flex; align-items:baseline; gap:1px; letter-spacing:.1px; font-weight:800 }
-.wm__c{ font-size:1.25em; line-height:1; position:relative; top:1px }
-.wm__heart svg{ display:inline-block; vertical-align:-2px }
-
-.nav{ display:flex; align-items:center; gap:10px }
-.nav__link{
-  text-decoration:none; color:var(--ink);
-  padding:8px 10px; border-radius:8px;
+.wm {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  letter-spacing: 0.1px;
+  font-weight: 800;
+  line-height: 1;
+  font-size: clamp(1.8rem, 2.2vw + 1rem, 3.2rem); /* bigger + responsive */
 }
-.nav__link:hover{ background:#f2f5fa }
-.nav__btn{
-  text-decoration:none; padding:8px 12px; border-radius:10px;
-  background:var(--primary); color:var(--primary-ink); font-weight:800;
-  border:1px solid var(--primary);
+.wm__c {
+  font-size: 1.25em;
+  line-height: 1;
+  position: relative;
+  top: 1px;
+}
+
+/* easy knobs */
+:root {
+  --peach: 255, 190, 160; /* peach color (R,G,B) */
+  --glow-min: 0.18; /* opacity at pulse ends */
+  --glow-max: 0.55; /* opacity mid-pulse */
+  --pulse-ms: 2600ms; /* pulse speed */
+}
+
+.wm__heart {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+
+/* size the SVG with the text and let it scale */
+.wm__heart svg {
+  height: 1.2em !important;
+  width: auto !important;
+  vertical-align: -2px;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: heartGlow var(--pulse-ms) ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+/* soft halo behind the heart */
+.wm__heart::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  z-index: -1;
+  background: radial-gradient(
+    circle,
+    rgba(var(--peach), var(--glow-max)) 0%,
+    rgba(var(--peach), 0) 70%
+  );
+  filter: blur(10px);
+  opacity: var(--glow-min);
+  transform: scale(0.9);
+  animation: peachPulse var(--pulse-ms) ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm__heart svg,
+  .wm__heart::after {
+    animation: none;
+  }
+}
+
+/* SVG glow + gentle scale */
+@keyframes heartGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(var(--peach), 0));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(var(--peach), var(--glow-max)));
+    transform: scale(1.06);
+  }
+}
+
+/* halo pulse */
+@keyframes peachPulse {
+  0%,
+  100% {
+    opacity: var(--glow-min);
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: var(--glow-max);
+    transform: scale(1.06);
+  }
+}
+
+/* keep the centered brand link clickable and centered */
+.brand-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+  z-index: 1;
+  pointer-events: auto;
+  color: inherit;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav__link {
+  text-decoration: none;
+  color: var(--ink);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+.nav__link:hover {
+  background: #f2f5fa;
+}
+.nav__btn {
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-weight: 800;
+  border: 1px solid var(--primary);
+}
+
+/* Optional small niceties */
+.brand__logo {
+  height: 32px;
+}
+
+.nav__link--active {
+  font-weight: 600;
+  border-bottom: 2px solid var(--primary);
+}
+
+.navbar .brand__logo {
+  width: clamp(48px, 4vw + 28px, 96px);
+  height: auto;
 }

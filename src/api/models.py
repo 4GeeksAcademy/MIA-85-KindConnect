@@ -5,6 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime, date as datetime_date
 from typing import List
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.sql import func
 
 db = SQLAlchemy()
 
@@ -89,7 +90,8 @@ class Post(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     author: str = db.Column(db.String(80), default="anon")
     body: str = db.Column(db.Text, nullable=False)
-    created_at: datetime = db.Column(db.DateTime, default=datetime)
+    created_at: datetime = db.Column(db.DateTime, server_default=func.now())
+    zip_code = db.Column(db.String(10), index=True)
     replies: Mapped[List["Reply"]] = db.relationship(
         "Reply", backref="post", cascade="all, delete-orphan")  # type: ignore
     favorites = db.relationship(
@@ -100,12 +102,14 @@ class Post(db.Model):
             "id": self.id,
             "author": self.author,
             "body": self.body,
+            "zip_code": self.zip_code,
             "created_at": self.created_at.isoformat()
         }
 
-    def __init__(self, author, body):
+    def __init__(self, author, body, zip_code=None):
         self.author = author
         self.body = body
+        self.zip_code = zip_code
         db.session.add(self)
         db.session.commit()
 

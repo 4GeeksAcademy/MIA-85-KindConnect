@@ -18,9 +18,9 @@ import { Signup } from "./pages/Signup";
 import { Login } from "./pages/Login";
 import { Profile } from "./pages/Profile";
 import { ResetPassword } from "./pages/ResetPassword";
-// Animals page: default export from Animals.jsx
 import Animals from "./pages/Animals";
 import ProtectedRoute from "./components/ProtectedRoute";
+
 
 
 export const router = createBrowserRouter(
@@ -31,16 +31,15 @@ export const router = createBrowserRouter(
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route path="/" element={<Home />} />
       <Route path="/landing" element={<Landing />} />
-      <Route path="/food" element={<Food />} />
+      <Route path="/food" element={<KindConnect />} />
       <Route path="/kindconnect" element={<KindConnect />} />
       <Route path="/postformmodal" element={<PostFormModal />} />
       <Route path="/honeydo" element={<Honeydo />} />
       <Route path="/about" element={<About />} />
-      <Route path="/animals" element={<ProtectedRoute><Animals /></ProtectedRoute>} />
+      <Route path="/animals" element={<Animals />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/resetPassword" element={<ResetPassword />} />
     </Route>
 
   ), {

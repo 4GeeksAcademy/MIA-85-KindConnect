@@ -1,29 +1,25 @@
-
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
 import os
-from flask import Flask, request, jsonify, url_for, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory
 from flask_migrate import Migrate
-from flask_swagger import swagger
-from api.utils import APIException, generate_sitemap
-from api.models import db, User, Post, Reply, Favorite
-from api.routes import api
-from api.admin import setup_admin
-from api.commands import setup_commands
+from src.api.utils import APIException, generate_sitemap
+from src.api.models import db, User, Post, Reply, Favorite
+from src.api.routes import api as api_bp
+from src.api.admin import setup_admin
+from src.api.commands import setup_commands
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
-# from models import Person
+NINJA_API_KEY = os.getenv("NINJA_API_KEY")
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
+
 app = Flask(__name__)
 CORS(app)
 app.url_map.strict_slashes = False
 
-# database condiguration
+# database configuration
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
@@ -35,27 +31,21 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
 
-app.config["JWT_SECRET_KEY"]= os.environ.get("FLASK_APP_KEY")
-app.config["JWT_REFRESH_TOKEN_EXPIRES"]= 57
+app.config["JWT_SECRET_KEY"] = os.environ.get("FLASK_APP_KEY", "dev-secret")
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 57
 jwt = JWTManager(app)
 
-# add the admin
+# add admin and CLI commands
 setup_admin(app)
-
-# add the admin
 setup_commands(app)
 
-# Add all endpoints form the API with a "api" prefix
-app.register_blueprint(api, url_prefix='/api')
-
-# Handle/serialize errors like a JSON object
+# register the API blueprint from src/api/routes.py
+app.register_blueprint(api_bp, url_prefix='/api')
 
 
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
-
-# generate sitemap with all your endpoints
 
 
 @app.route('/')
@@ -64,27 +54,7 @@ def sitemap():
         return generate_sitemap(app)
     return send_from_directory(static_file_dir, 'index.html')
 
-
-@app.get("/api/posts")
-def get_posts():
-    posts = Post.query.order_by(Post.id.desc()).all()
-    return jsonify([p.serialize() for p in posts]), 200
-
-
-@app.post("/api/posts")
-def create_post():
-    data = request.get_json() or {}
-    body = data.get("body", "").strip()
-    author = (data.get("author") or "anon").strip()
-    if not body:
-        return jsonify({"error": "Post body is required"}), 400
-
-    post = Post(author=author, body=body)
-    db.session.add(post)
-    db.session.commit()
-    return jsonify(post.serialize()), 201
-
-# any other endpoint will try to serve it like a static file
+# fallback static file handler
 
 
 @app.route('/<path:path>', methods=['GET'])
@@ -92,11 +62,10 @@ def serve_any_other_file(path):
     if not os.path.isfile(os.path.join(static_file_dir, path)):
         path = 'index.html'
     response = send_from_directory(static_file_dir, path)
-    response.cache_control.max_age = 0  # avoid cache memory
+    response.cache_control.max_age = 0
     return response
 
 
-# this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)

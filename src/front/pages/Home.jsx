@@ -1,20 +1,40 @@
-import React, { useEffect } from "react";
+import React from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import "../styles/pages/home.css";
+import { Link, useNavigate } from "react-router-dom";
+
 export const Home = () => {
-  const { store, dispatch } = useGlobalReducer();
+  const { store } = useGlobalReducer();
+  const navigate = useNavigate();
+  const [zipSearch, setZipSearch] = useState("");
+  const [zipPosts, setZipPosts] = useState([]);
+
+
+  // Check for existing token (from global store or localStorage)
+  const token = store.token || localStorage.getItem("token");
 
   return (
     <main className="grid" aria-labelledby="homeTitle">
-      {/* Left column: categories (simple placeholders) */}
+      {/* Left column: categories */}
       <aside className="grid__left">
         <section className="cats" aria-labelledby="catsTitle">
           <h2 id="catsTitle" className="cats__title">Categories</h2>
-          <div className="cats__chips">
-            <button className="chip" type="button">Animal</button>
-            <button className="chip" type="button">Food</button>
-            <button className="chip" type="button">Honey Do's</button>
-          </div>
+
+          {token ? (
+            <div className="cats__chips">
+              <Link className="chip" to="/animals">Animal</Link>
+              <Link className="chip" to="/food">Food</Link>
+              <Link className="chip" to="/honeydo">Honey Do's</Link>
+            </div>
+          ) : (
+            <div className="p-3 rounded border bg-light">
+              <p className="mb-2">Please log in to access categories.</p>
+              <div className="d-flex gap-2">
+                {/* <Link to="/login" className="btn btn-outline-primary">Login</Link>
+                <Link to="/signup" className="btn btn-primary">Sign Up</Link> */}
+              </div>
+            </div>
+          )}
         </section>
       </aside>
 
@@ -22,23 +42,30 @@ export const Home = () => {
       <section className="grid__center">
         <header className="wallHead">
           <h1 id="homeTitle" className="wallTitle">
-          Welcome to{" "}
-          <span className="wm" aria-label="KindConnect">
-          Kind
-          <span className="wm__c" aria-hidden="true">C</span>
-          <span className="wm__heart" role="img" aria-label="heart">❤</span>
-            nnect
-          </span>
+            Welcome, this is where
           </h1>
-          <p className="wallSub">Neighbors helping neighbors.</p>
+          <p className="wallSub">Neighbors help neighbors.</p>
         </header>
 
         {/* Zip / location search (placeholder) */}
         <div className="zip">
-          <label className="zip__label" htmlFor="zipInput">Search by Your Zip Code to find local posts fast</label>
+          <label className="zip__label" htmlFor="zipInput">
+            Search by Your Zip Code to find local posts fast
+          </label>
           <div className="zip__row">
-            <input id="zipInput" className="zip__input" type="text" placeholder="e.g., 33101 or Miami, FL" />
-            <button className="zip__btn" type="button">Search</button>
+            <input
+              id="zipInput"
+              className="zip__input"
+              type="text"
+              placeholder="e.g., 33101 or Miami, FL"
+            />
+            <button
+              className="zip__btn"
+              type="button"
+              onClick={handleZipSearch}
+            >
+              Search
+            </button>
           </div>
         </div>
 
