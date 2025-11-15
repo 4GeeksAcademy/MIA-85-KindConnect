@@ -5,10 +5,13 @@ export default function CreatePost({
   open,
   onClose,
   postSubmitFn,
-  category
+  category,          // e.g., "animals" | "food" | "honey-dos"
+  defaultType = "seeking", // mirrors the page's active tab
+  heading = "Create a post"
 }) {
   const { store } = useGlobalReducer();
-  const [type, setType] = useState("needing");
+
+  const [type, setType] = useState(defaultType);   // "seeking" | "sharing"
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [files, setFiles] = useState([]);
@@ -16,16 +19,21 @@ export default function CreatePost({
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Keep the selector in sync when parent changes tab before opening
+  useEffect(() => {
+    if (open) setType(defaultType);
+  }, [open, defaultType]);
+
   if (!open) return null;
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     setError("");
     setIsSubmitting(true);
 
     try {
-      // build what your Flask API expects
       const bodyText = `${title.trim()}\n\n${desc.trim()}`.trim();
+
       const payload = {
         author:
           store.user?.username ||
@@ -34,9 +42,8 @@ export default function CreatePost({
           "anon",
         body: bodyText,
         zip_code: zip.trim(),
-        // backend ignores extra keys, so we can send type if you want later:
-        type,
-        category
+        type,       // "seeking" | "sharing"
+        category    // page-provided
       };
 
       const res = await fetch(`${store.API_BASE_URL}/api/posts`, {
@@ -49,14 +56,10 @@ export default function CreatePost({
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.message || "Failed to create post");
 
-      if (!res.ok) {
-        throw new Error(data.error || data.message || "Failed to create post");
-      }
-
-      // Let parent know a new post was created (optional)
       postSubmitFn && postSubmitFn();
-      // clear form + close
+      // reset + close
       setTitle("");
       setDesc("");
       setZip("");
@@ -71,61 +74,47 @@ export default function CreatePost({
   };
 
   return (
-    <div
-      className="cp"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="cpTitle"
-      onClick={onClose}
-    >
+    <div className="cp" role="dialog" aria-modal="true" aria-labelledby="cpTitle" onClick={onClose}>
       <div className="cp__panel" onClick={(e) => e.stopPropagation()}>
         <div className="cp__head">
-          <h2 id="cpTitle" className="cp__title">
-            Create a post
-          </h2>
-          <button className="cp__close" aria-label="Close" onClick={onClose}>
-            ✕
-          </button>
+          <h2 id="cpTitle" className="cp__title">{heading}</h2>
+          <button className="cp__close" aria-label="Close" onClick={onClose}>✕</button>
         </div>
 
         {/* Type selector */}
         <div className="cp__seg" role="group" aria-label="Post type">
           <button
             type="button"
-            className={`cp__segBtn ${type === "needing" ? "is-active" : ""}`}
-            onClick={() => setType("needing")}
+            className={`cp__segBtn ${type === "seeking" ? "is-active" : ""}`}
+            onClick={() => setType("seeking")}
           >
-            Wanted
+            Seeking
           </button>
           <button
             type="button"
-            className={`cp__segBtn ${type === "giving" ? "is-active" : ""}`}
-            onClick={() => setType("giving")}
+            className={`cp__segBtn ${type === "sharing" ? "is-active" : ""}`}
+            onClick={() => setType("sharing")}
           >
-            Offer
+            Sharing
           </button>
         </div>
 
         <form className="cp__form" onSubmit={handleSubmit}>
-          <label htmlFor="cpTitle" className="cp__label">
-            Title
-          </label>
+          <label htmlFor="cpTitle" className="cp__label">Title</label>
           <input
             id="cpTitle"
             className="cp__input"
             placeholder={
-              type === "wanted"
-                ? "e.g., Need help fixing a leaky faucet"
-                : "e.g., I can fix leaky faucets this weekend"
+              type === "seeking"
+                ? "e.g., Need a pet carrier for vet visit"
+                : "e.g., Offering a spare pet carrier this weekend"
             }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
           />
 
-          <label htmlFor="cpDesc" className="cp__label">
-            Description
-          </label>
+          <label htmlFor="cpDesc" className="cp__label">Description</label>
           <textarea
             id="cpDesc"
             className="cp__textarea"
@@ -135,9 +124,7 @@ export default function CreatePost({
             onChange={(e) => setDesc(e.target.value)}
           />
 
-          <label htmlFor="cpZip" className="cp__label">
-            ZIP Code
-          </label>
+          <label htmlFor="cpZip" className="cp__label">ZIP Code</label>
           <input
             id="cpZip"
             className="cp__input"
@@ -149,9 +136,7 @@ export default function CreatePost({
             required
           />
 
-          <label htmlFor="cpFiles" className="cp__label">
-            Add photo or video
-          </label>
+          <label htmlFor="cpFiles" className="cp__label">Add photo or video</label>
           <input
             id="cpFiles"
             className="cp__file"
@@ -164,20 +149,10 @@ export default function CreatePost({
           {error && <p className="cp__error">{error}</p>}
 
           <div className="cp__actions">
-            <button
-              type="button"
-              className="cp__btn"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
+            <button type="button" className="cp__btn" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="cp__btn cp__btn--primary"
-              disabled={isSubmitting}
-            >
+            <button type="submit" className="cp__btn cp__btn--primary" disabled={isSubmitting}>
               {isSubmitting ? "Posting…" : "Post"}
             </button>
           </div>

@@ -1,38 +1,37 @@
-/* HONEY-DO PAGE (scoped, full-height, no footer bleed) */
-.page--honeydo {
-  
-  --bg-base: #FFF3EA;
-  --bg-accent: #FFE3D1;
-  --primary: #FF7A45;
-  --accent: #FFC6A6;
-  --ink: #2B140B;
-  --muted: #6F554B;
-  --border: #F5D8C9;
+
+.page--animals {
+  --bg-base: #b3f7d9;
+  --bg-accent: #D3F0E6;
+  --primary: #2AB795;
+  --accent:  #7ADBC9;
+  --ink: #0E2B25;
+  --muted: #56746D;
+  --border: #2d7961;
 
   position: relative;
-  isolation: isolate;            
+  isolation: isolate;
   display: block;
-  min-height: 100svh;            
-  padding-bottom: 32px;          
+  min-height: 100svh;                  
+  padding-bottom: 32px;
   background: linear-gradient(180deg, var(--bg-base), var(--bg-accent));
 }
 
-/* page-only background artwork */
-.page--honeydo::before {
+.page--animals::before{
   content: "";
   position: absolute;
-  inset: 0;                      /* confined to this main element */
+  inset: 0;
   z-index: 0;
   background:
-    radial-gradient(transparent 50%, rgba(255,255,255,.6) 100%),
-    url("../../assets/img/home.png") center / cover no-repeat;
-  opacity: .05;
+    linear-gradient(rgba(255, 255, 255, 0.477), rgba(255,255,255,.74)),
+    url("../../assets/img/Animal_BG.png") center / cover no-repeat,
+    var(--bg-base);
+  opacity: 100;                           
   pointer-events: none;
 }
 
-.page--honeydo > * { position: relative; z-index: 1; }
+.page--animals > * { position: relative; z-index: 1; }
 
-/* ---------- hero ---------- */
+/* ---------- hero (shares honey styles) ---------- */
 .honey__hero{
   max-width: 900px;
   margin: 0 auto;
@@ -47,11 +46,12 @@
   margin: 0 0 6px;
   font-size: 32px;
   font-weight: 800;
+  color: var(--ink);
 }
 .honey__desc{
   margin: 0 auto;
   max-width: 680px;
-  color: rgba(1,14,22,0.72);
+  color: var(--muted);
 }
 
 /* ---------- grid ---------- */
@@ -69,7 +69,7 @@
 
 /* ---------- sidebar cards ---------- */
 .hc{
-  background: var(--surface, #fff);
+  background: #fff;
   border: 1px solid var(--border);
   border-radius: var(--radius, 12px);
   padding: 12px;

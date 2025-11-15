@@ -11,6 +11,7 @@
 @import "./pages/honeydo.css";
 @import "./pages/footer.css";
 @import "./pages/landing.css";
+@import "./pages/animals.css";
 
 .wm {
   display: inline-flex;
