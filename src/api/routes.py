@@ -1,27 +1,23 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
-""" API routes: auth, users, and Honey Do endpoints """
-
+import os
+import requests
 from flask import Flask, request, jsonify, url_for, Blueprint
+from .models import db, User, Post, Reply, Favorite, PostCategory
+from .utils import generate_sitemap, APIException
 from flask_cors import CORS
 from sqlalchemy import select
+from typing import Dict
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 
-from api.utils import generate_sitemap, APIException
-from api.models import db, User, Project, ProjectUpdate, Comment, HoneyPost
-from flask_jwt_extended import (
-    create_access_token,
-    jwt_required,
-    get_jwt_identity,
-)
 
 api = Blueprint("api", __name__)
 CORS(api)  # Allow CORS requests to this API
-
+NINJA_API_KEY = os.getenv("NINJA_API_KEY")
 
 # Health check
 # ---------------------------------------------------------------------
+
+
 @api.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "service": "kindconnect-api"}), 200
@@ -31,21 +27,164 @@ def health():
 # ---------------------------------------------------------------------
 @api.route("/hello", methods=["GET", "POST"])
 def handle_hello():
-    response_body = {"message": "Hello! I'm a message that came from the backend."}
+    response_body = {
+        "message": "Hello! I'm a message that came from the backend."}
     return jsonify(response_body), 200
 
 
-# Auth: Sign up / Login / Profile / Reset password (security Q&A)
-# ---------------------------------------------------------------------
-@api.route("/signup", methods=["POST"])
+@api.get("/posts")
+def list_posts():
+    device_id = request.args.get("device_id", "")
+    items = Post.query.order_by(Post.created_at.desc()).all()  # type: ignore
+    zip_code = request.args.get("zip_code", "").strip() or None
+    zip_filter = zip_code if zip_code else None
+
+    q = Post.query
+    if zip_filter:
+        q = q.filter(Post.zip_code == zip_filter)
+    items = q.order_by(Post.created_at.desc()).all()  # type: ignore
+    return jsonify([i.serialize() for i in items]), 200
+    out = []
+    for p in items:
+        fav_count = len(p.favorites)
+        is_fav = False
+        if device_id:
+            is_fav = any(f.device_id == device_id for f in p.favorites)
+        out.append({
+            "id": p.id,
+            "author": p.author,
+            "body": p.body,
+            "created_at": p.created_at.isoformat(),
+            "replies_count": len(p.replies),
+            "favorites_count": fav_count,
+            "is_favorited": is_fav
+        })
+    return jsonify(out), 200
+
+
+@jwt_required()
+@api.post("/posts")
+def create_post():
+    data = request.get_json() or {}
+    body = (data.get("body") or "").strip()
+    author = (data.get("author") or "anon").strip() or "anon"
+    zip_code = (data.get("zip_code") or "").strip() or None
+    type = data.get("type", None)
+    category = data.get("category", None)
+    if type is None or (type != "needing" and type != "giving"):
+        return jsonify({"error": "either giving or needing is required"}), 400
+    if category:
+        try:
+            category = PostCategory(category)
+        except ValueError as error:
+            category = None
+    if category is None:
+        return jsonify({"error": "either food, honey-dos, or animals is required"}), 400
+    if not body:
+        return jsonify({"error": "body required"}), 400
+
+    # basic format check
+    if zip_code and not (len(zip_code) == 5 and zip_code.isdigit()):
+        return jsonify({"error": "invalid zip format"}), 400
+
+    url = f"https://api.api-ninjas.com/v1/zipcode?zip={zip_code}"
+    headers = {"X-Api-Key": NINJA_API_KEY}
+
+    r = requests.get(url, headers=headers)
+
+    if r.status_code != 200:
+        return jsonify({"error": "ZIP lookup failed"}), 400
+
+    results = r.json()
+    if not results:  # empty list means invalid ZIP
+        return jsonify({"error": "invalid zip"}), 400
+    lat = results[0]["lat"]
+    lon = results[0]["lon"]
+
+    p = Post(
+        author=author,
+        body=body,
+        zip_code=zip_code,
+        lat=lat,
+        lon=lon,
+        category=category,
+        type=type
+    )
+    db.session.add(p)
+    db.session.commit()
+    return jsonify({"id": p.id, "zip_code": p.zip_code}), 201
+
+
+@api.get("/posts/<int:pid>")
+def get_post(pid):
+    p = Post.query.get(pid)
+    if not p:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({
+        "id": p.id,
+        "author": p.author,
+        "body": p.body,
+        "created_at": p.created_at.isoformat(),
+        "replies": [
+            {
+                "id": r.id,
+                "author": r.author,
+                "body": r.body,
+                "created_at": r.created_at.isoformat()
+            } for r in sorted(p.replies, key=lambda r: r.created_at)
+        ],
+        "favorites_count": len(p.favorites)
+    }), 200
+
+
+@api.post("/posts/<int:pid>/reply")
+def reply_to_post(pid):
+    p = Post.query.get(pid)
+    if not p:
+        return jsonify({"error": "not found"}), 404
+    data = request.get_json() or {}
+    body = (data.get("body") or "").strip()
+    author = (data.get("author") or "anon").strip() or "anon"
+    if not body:
+        return jsonify({"error": "body required"}), 400
+    r = Reply(post_id=p.id, author=author, body=body)
+    db.session.add(r)
+    db.session.commit()
+    return jsonify({"id": r.id}), 201
+
+
+@api.post("/posts/<int:pid>/favorite")
+def toggle_favorite(pid):
+    p = Post.query.get(pid)
+    if not p:
+        return jsonify({"error": "not found"}), 404
+    data = request.get_json() or {}
+    device_id = (data.get("device_id") or "").strip()
+
+    if not device_id:
+        return jsonify({"error": "device_id required"}), 400
+
+    fav = Favorite.query.filter_by(post_id=p.id, device_id=device_id).first()
+    if fav:
+        db.session.delete(fav)
+        db.session.commit()
+        return jsonify({"favorited": False, "favorites_count": len(p.favorites)}), 200
+    else:
+        fav = Favorite(post_id=p.id, device_id=device_id)
+        db.session.add(fav)
+        db.session.commit()
+        return jsonify({"favorited": True, "favorites_count": len(p.favorites)}), 201
+
+
+@api.route('/signup', methods=['POST'])
 def handle_signup():
-    body = request.get_json(silent=True) or {}
+    body: Dict = request.json  # type: ignore
 
     first_name = body.get("first_name")
     last_name = body.get("last_name")
     username = body.get("username")
     email = body.get("email")
-    password = body.get("password")
+    password = body.get("password", "")
     phone_number = body.get("phone_number")
     date_of_birth = body.get("date_of_birth")
     security_question = body.get("security_question")
@@ -79,6 +218,7 @@ def handle_signup():
         last_name=last_name,
         username=username,
         email=email,
+        password=password,
         phone_number=phone_number,
         date_of_birth=date_of_birth,
         is_active=True,
@@ -96,10 +236,11 @@ def handle_signup():
 
 @api.route("/resetPassword/question", methods=["POST"])
 def getSecurityQuestion():
-    body = request.get_json(silent=True) or {}
+    body = request.get_json() or {}
     email = body.get("email")
 
-    user = db.session.scalars(select(User).where(User.email == email)).one_or_none()
+    user = db.session.scalars(select(User).where(
+        User.email == email)).one_or_none()
     if not user:
         return jsonify({"message": "User not found"}), 404
 
@@ -108,15 +249,18 @@ def getSecurityQuestion():
 
 @api.route("/resetPassword/verify", methods=["POST"])
 def verifyResetPassword():
-    body = request.get_json(silent=True) or {}
+    body = request.get_json() or {}
     email = body.get("email")
     answer = body.get("security_answer")
     new_password = body.get("new_password")
+    if not new_password:
+        return jsonify({"message": "Missing required fields"}), 400
 
     if not all([email, answer, new_password]):
         return jsonify({"message": "Missing required fields"}), 400
 
-    user = db.session.scalars(select(User).where(User.email == email)).one_or_none()
+    user = db.session.scalars(select(User).where(
+        User.email == email)).one_or_none()
     if not user:
         return jsonify({"message": "User not found"}), 404
 
@@ -131,14 +275,15 @@ def verifyResetPassword():
 
 @api.route("/login", methods=["POST"])
 def handle_login():
-    body = request.get_json(silent=True) or {}
+    body = request.json or {}
     email = body.get("email")
     password = body.get("password")
 
     if not email or not password:
         return jsonify({"message": "Missing credentials..."}), 400
 
-    user = db.session.scalars(select(User).where(User.email == email)).one_or_none()
+    user = db.session.scalars(select(User).where(
+        User.email == email)).one_or_none()
     if user is None:
         return jsonify({"message": "No such user..."}), 401
 
@@ -183,8 +328,7 @@ def update_profile():
     if not user:
         return jsonify({"message": "User not found"}), 404
 
-    body = request.get_json(silent=True) or {}
-
+    body = request.json or {}
     user.first_name = body.get("first_name", user.first_name)
     user.last_name = body.get("last_name", user.last_name)
     user.username = body.get("username", user.username)
@@ -192,124 +336,13 @@ def update_profile():
     user.phone_number = body.get("phone_number", user.phone_number)
 
     date_of_birth = body.get("date_of_birth")
-    if not date_of_birth:
-        user.date_of_birth = None
-    else:
-        from datetime import datetime as _dt
+    if date_of_birth:
+        from datetime import datetime
         try:
-            user.date_of_birth = _dt.strptime(date_of_birth, "%Y-%m-%d").date()
+            user.date_of_birth = datetime.strptime(
+                date_of_birth, "%Y-%m-%d").date()
         except ValueError:
             return jsonify({"message": "Invalid date format (expected YYYY-MM-DD)"}), 400
 
     db.session.commit()
     return jsonify(user.serialize()), 200
-
-
-# ---------------------------------------------------------------------
-# Honey Do: CRUD
-# ---------------------------------------------------------------------
-@api.route("/honeydo/posts", methods=["GET"])
-def list_honey_posts():
-    """List posts with optional filters."""
-    q_type = request.args.get("type")  # wanted | offer | None
-    q_zip = request.args.get("zip")
-    limit = int(request.args.get("limit", 20))
-    offset = int(request.args.get("offset", 0))
-
-    query = HoneyPost.query
-    if q_type in ("wanted", "offer"):
-        query = query.filter(HoneyPost.type == q_type)
-    if q_zip:
-        query = query.filter(HoneyPost.zip == q_zip)
-
-    total = query.count()
-    items = (
-        query.order_by(HoneyPost.created_at.desc())
-        .limit(limit)
-        .offset(offset)
-        .all()
-    )
-    return (
-        jsonify(
-            {
-                "items": [p.serialize() for p in items],
-                "total": total,
-                "limit": limit,
-                "offset": offset,
-            }
-        ),
-        200,
-    )
-
-
-@api.route("/honeydo/posts", methods=["POST"])
-def create_honey_post():
-    """Create a new Honey Do post."""
-    data = request.get_json(silent=True) or {}
-    p_type = data.get("type")
-    title = (data.get("title") or "").strip()
-    zipc = (data.get("zip") or "").strip()
-    desc = data.get("description")
-    media = data.get("media_urls", [])
-
-    if p_type not in ("wanted", "offer"):
-        return jsonify({"message": "type must be 'wanted' or 'offer'"}), 422
-    if len(title) < 4:
-        return jsonify({"message": "title must be at least 4 characters"}), 422
-    if not zipc:
-        return jsonify({"message": "zip is required"}), 422
-
-    post = HoneyPost(
-        user_id=None,  
-        type=p_type,
-        title=title,
-        description=desc,
-        zip=zipc,
-        media_urls=media,
-        status="active",
-    )
-    db.session.add(post)
-    db.session.commit()
-    return jsonify({"post": post.serialize()}), 201
-
-
-@api.route("/honeydo/posts/<int:post_id>", methods=["GET"])
-def get_honey_post(post_id: int):
-    post = db.session.get(HoneyPost, post_id)
-    if not post:
-        return jsonify({"message": "Not found"}), 404
-    return jsonify({"post": post.serialize()}), 200
-
-
-@api.route("/honeydo/posts/<int:post_id>", methods=["PATCH"])
-def update_honey_post(post_id: int):
-    post = db.session.get(HoneyPost, post_id)
-    if not post:
-        return jsonify({"message": "Not found"}), 404
-
-    data = request.get_json(silent=True) or {}
-
-    if "type" in data:
-        if data["type"] not in ("wanted", "offer"):
-            return jsonify({"message": "invalid type"}), 422
-        post.type = data["type"]
-
-    for k in ("title", "description", "zip", "status"):
-        if k in data and isinstance(data[k], str):
-            setattr(post, k, data[k].strip())
-
-    if "media_urls" in data:
-        post.media_urls = data["media_urls"]
-
-    db.session.commit()
-    return jsonify({"post": post.serialize()}), 200
-
-
-@api.route("/honeydo/posts/<int:post_id>", methods=["DELETE"])
-def delete_honey_post(post_id: int):
-    post = db.session.get(HoneyPost, post_id)
-    if not post:
-        return jsonify({"message": "Not found"}), 404
-    db.session.delete(post)
-    db.session.commit()
-    return "", 204

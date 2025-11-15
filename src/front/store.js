@@ -5,6 +5,7 @@ export const initialStore = (initValues) => {
     user: JSON.parse(localStorage.getItem("user")) || null,
     token: undefined,
     message: null,
+    posts: [],
     todos: [
       {
         id: 1,
@@ -23,6 +24,11 @@ export const initialStore = (initValues) => {
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
+    case "set_posts":
+      return {
+        ...store,
+        posts: action.payload,
+      };
     case "authenticate":
       if (typeof action.payload === "object") {
         const { token, user } = action.payload;

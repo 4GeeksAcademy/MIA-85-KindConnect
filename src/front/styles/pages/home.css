@@ -31,11 +31,19 @@
   gap: 8px;
 }
 .chip {
-  border: 1px solid var(--border);
-  background: #fff;
-  border-radius: 999px;
+  display: inline-block;
+  text-decoration: none;
+  color: inherit;
   padding: 8px 12px;
+  border-radius: 12px;
+  background: #f5f5f7;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.chip:hover {
+  background: #e6e9ef;
 }
 
 /* --- Wall controls (center) --- */

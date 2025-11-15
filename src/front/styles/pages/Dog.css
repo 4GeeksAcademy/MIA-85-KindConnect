@@ -1,10 +1,4 @@
-.hero--center {
-  max-width: 900px;
-  margin: 0 auto;
-  text-align: center;
-  padding: 24px 16px;
-}
-.honey__header {
+.animal__header {
   text-align: center; /* centers everything */
   display: flex;
   flex-direction: column; /* stack title + description */
@@ -12,7 +6,7 @@
   gap: 0.4em; /* space between title and subtitle */
 }
 
-.honey__title {
+.animal__title {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,14 +14,14 @@
   margin: 0; /* remove default h1 margin */
 }
 
-.honey__subtitle {
+.Animal__subtitle {
   margin-top: 0; /* reduce vertical spacing */
   font-size: 1.1rem;
   line-height: 1.5;
   max-width: 60ch; /* keeps text from stretching too wide */
   color: #333;
 }
-.heroEmoji--title {
+.DogEmoji--title {
   width: 1.9em;
   height: 1.9em;
   background-size: cover;
