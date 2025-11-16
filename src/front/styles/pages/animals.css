@@ -1,37 +1,38 @@
 
 .page--animals {
-  --bg-base: #b3f7d9;
+  --bg-base: #64c69bf1;
   --bg-accent: #D3F0E6;
-  --primary: #2AB795;
+  --primary: #D06E00;
   --accent:  #7ADBC9;
-  --ink: #0E2B25;
+  --ink: #011612;
   --muted: #56746D;
   --border: #2d7961;
 
   position: relative;
-  isolation: isolate;
-  display: block;
-  min-height: 100svh;                  
-  padding-bottom: 32px;
+  min-height: 100%;
+  isolation: isolate; 
   background: linear-gradient(180deg, var(--bg-base), var(--bg-accent));
 }
 
-.page--animals::before{
+.page--animals::before {
   content: "";
-  position: absolute;
+  position: absolute;  /* absolute to the page container */
   inset: 0;
-  z-index: 0;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.477), rgba(255,255,255,.74)),
-    url("../../assets/img/Animal_BG.png") center / cover no-repeat,
-    var(--bg-base);
-  opacity: 100;                           
+    radial-gradient(transparent 50%, rgba(255,255,255,.65) 100%),
+    var(--animals-bg) center / cover no-repeat;
+  opacity: .2;          
   pointer-events: none;
+  z-index: 0;
 }
 
-.page--animals > * { position: relative; z-index: 1; }
 
-/* ---------- hero (shares honey styles) ---------- */
+.page--food .page-surface {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------- Shared layout (same as your other pages) --------- */
 .honey__hero{
   max-width: 900px;
   margin: 0 auto;
@@ -54,7 +55,6 @@
   color: var(--muted);
 }
 
-/* ---------- grid ---------- */
 .honey__grid{
   max-width: 1100px;
   margin: 8px auto 24px;
@@ -67,15 +67,15 @@
   .honey__grid{ grid-template-columns: 1fr; }
 }
 
-/* ---------- sidebar cards ---------- */
+/* Sidebar cards */
 .hc{
   background: #fff;
   border: 1px solid var(--border);
-  border-radius: var(--radius, 12px);
+  border-radius: 12px;
   padding: 12px;
 }
 .hc + .hc{ margin-top: 12px; }
-.hc__label{ font-weight: 700; margin-bottom: 6px; display: block; }
+.hc__label{ font-weight: 700; margin-bottom: 6px; display: block; color: var(--ink); }
 .hc__input{
   width: 100%;
   padding: 10px 12px;
@@ -92,17 +92,18 @@
   background: #fff;
   cursor: pointer;
   font-weight: 600;
+  color: var(--ink);
 }
 .hc__btn--primary{
   background: var(--primary);
   border-color: var(--primary);
-  color: var(--primary-ink, #0b1226);
+  color: var(--primary-ink);
   font-weight: 800;
 }
 .hc__help{ margin: 8px 0 0; color: var(--muted); font-size: 13px; }
-.hc__h2{ margin: 0 0 4px; font-size: 16px; font-weight: 800; }
+.hc__h2{ margin: 0 0 4px; font-size: 16px; font-weight: 800; color: var(--ink); }
 
-/* ---------- feed ---------- */
+/* Feed */
 .honey__tabs{ display:flex; gap:8px; margin-bottom:10px; }
 .honey__tab{
   padding: 8px 12px;
@@ -115,7 +116,7 @@
 }
 .honey__tab.is-active{
   background: var(--primary);
-  color: var(--primary-ink, #0b1226);
+  color: var(--primary-ink);
   border-color: var(--primary);
   font-weight: 800;
 }
@@ -127,4 +128,20 @@
   border: 1px dashed var(--border);
   border-radius: 10px;
   background: #fff;
+}
+
+/* Taco image chip in the title */
+.foodEmoji {
+  display: inline-block;
+  width: 1.3em;
+  height: 1.3em;
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  transform: translateY(2px);
+  margin-left: 6px;
+}
+.foodEmoji--title {
+  width: 1.8em;
+  height: 1.8em;
 }

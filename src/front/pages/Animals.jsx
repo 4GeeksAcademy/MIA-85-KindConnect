@@ -3,7 +3,7 @@ import CreatePost from "../components/CreatePost.jsx";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import "../styles/pages/animals.css";
 import dogImg from "../assets/img/dachshund.jpg"; 
-
+import animalsbg from "../assets/img/Animal_BG.png";
 export default function Animals() {
   const [zip, setZip] = useState("");
   const [filter, setFilter] = useState("seeking"); 
@@ -33,7 +33,7 @@ export default function Animals() {
 
   return (
     
-    <main className="page--animals">
+    <main className="page--animals" style={{ "--animals-bg": `url(${animalsbg})` }}>
       <div className="page-surface">
         {/* Hero */}
         <header className="honey__hero">

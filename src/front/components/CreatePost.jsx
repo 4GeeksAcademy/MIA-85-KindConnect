@@ -4,22 +4,23 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 export default function CreatePost({
   open,
   onClose,
-  postSubmitFn,
-  category,          // e.g., "animals" | "food" | "honey-dos"
-  defaultType = "seeking", // mirrors the page's active tab
+  onSubmit,                 // optional, some pages use this
+  postSubmitFn,            // optional, other pages use this
+  category,                // "animals" | "food" | "honey-dos"
+  defaultType = "seeking", // "seeking" | "sharing"
   heading = "Create a post"
 }) {
   const { store } = useGlobalReducer();
 
-  const [type, setType] = useState(defaultType);   // "seeking" | "sharing"
+  const [type, setType] = useState(defaultType);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([]); // not uploaded yet; kept for UX/future
   const [zip, setZip] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Keep the selector in sync when parent changes tab before opening
+  // keep the selector in sync if the parent changes tabs
   useEffect(() => {
     if (open) setType(defaultType);
   }, [open, defaultType]);
@@ -42,8 +43,8 @@ export default function CreatePost({
           "anon",
         body: bodyText,
         zip_code: zip.trim(),
-        type,       // "seeking" | "sharing"
-        category    // page-provided
+        type,        // "seeking" | "sharing"
+        category     // "animals" | "food" | "honey-dos"
       };
 
       const res = await fetch(`${store.API_BASE_URL}/api/posts`, {
@@ -58,7 +59,10 @@ export default function CreatePost({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.message || "Failed to create post");
 
-      postSubmitFn && postSubmitFn();
+      // support either callback prop name
+      if (typeof onSubmit === "function") onSubmit(payload);
+      if (typeof postSubmitFn === "function") postSubmitFn(payload);
+
       // reset + close
       setTitle("");
       setDesc("");
@@ -73,11 +77,25 @@ export default function CreatePost({
     }
   };
 
+  // gentle category-aware placeholders
+  const titlePlaceholder =
+    type === "seeking"
+      ? (category === "animals"
+          ? "e.g., Need a pet carrier for a vet visit"
+          : category === "food"
+          ? "e.g., Looking for a warm meal tonight"
+          : "e.g., Need help fixing a leaky faucet")
+      : (category === "animals"
+          ? "e.g., Offering a spare pet carrier this weekend"
+          : category === "food"
+          ? "e.g., Sharing extra homemade tacos"
+          : "e.g., I can fix leaky faucets this weekend");
+
   return (
-    <div className="cp" role="dialog" aria-modal="true" aria-labelledby="cpTitle" onClick={onClose}>
+    <div className="cp" role="dialog" aria-modal="true" aria-labelledby="cpHeading" onClick={onClose}>
       <div className="cp__panel" onClick={(e) => e.stopPropagation()}>
         <div className="cp__head">
-          <h2 id="cpTitle" className="cp__title">{heading}</h2>
+          <h2 id="cpHeading" className="cp__title">{heading}</h2>
           <button className="cp__close" aria-label="Close" onClick={onClose}>✕</button>
         </div>
 
@@ -100,15 +118,11 @@ export default function CreatePost({
         </div>
 
         <form className="cp__form" onSubmit={handleSubmit}>
-          <label htmlFor="cpTitle" className="cp__label">Title</label>
+          <label htmlFor="cpInputTitle" className="cp__label">Title</label>
           <input
-            id="cpTitle"
+            id="cpInputTitle"
             className="cp__input"
-            placeholder={
-              type === "seeking"
-                ? "e.g., Need a pet carrier for vet visit"
-                : "e.g., Offering a spare pet carrier this weekend"
-            }
+            placeholder={titlePlaceholder}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -129,8 +143,9 @@ export default function CreatePost({
             id="cpZip"
             className="cp__input"
             type="text"
-            placeholder="e.g., 75701"
+            inputMode="numeric"
             pattern="[0-9]{5}"
+            placeholder="e.g., 75701"
             value={zip}
             onChange={(e) => setZip(e.target.value)}
             required

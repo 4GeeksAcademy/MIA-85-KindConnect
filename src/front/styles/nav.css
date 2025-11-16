@@ -16,6 +16,12 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* small hover pop */
+.brand__heartWrap:hover {
+  transform: scale(1.05);
+  transition: transform 160ms ease;
+}
+
 .brand__link {
   display: inline-flex;
   align-items: center;
@@ -28,7 +34,7 @@
 /* accept either class name you’ve used */
 .brand__logo,
 .brand__img {
-  width: clamp(48px, 4vw + 32px, 96px);
+  width: clamp(60px, 4vw + 32px, 96px);
   height: auto;
   object-fit: contain;
   border-radius: 8px;

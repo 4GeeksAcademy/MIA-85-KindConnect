@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import Wordmark from "../components/Wordmark.jsx";
 import logo from "../assets/img/logopng.png";
+
 export const Navbar = () => {
 	const { store, dispatch } = useGlobalReducer();
 	const navigate = useNavigate();
@@ -14,6 +15,7 @@ export const Navbar = () => {
 			dispatch({ type: "authenticate", payload: { token, user } });
 		}
 	}, [dispatch, store.token]);
+
 	useEffect(() => {
 		const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
 		const tooltipList = [...tooltipTriggerList].map(

@@ -2,15 +2,19 @@ import React, { useMemo, useState } from "react";
 import Hero from "../components/Hero.jsx";
 import CreatePost from "../components/CreatePost.jsx";
 import "../styles/pages/honeydo.css";
+import homebg from "../assets/img/home.png";
 
 export default function Honeydo() {
   const [zip, setZip] = useState("");
-  const [filter, setFilter] = useState("wanted"); // "wanted" | "offers"
+  const [filter, setFilter] = useState("seeking"); // "seeking" | "sharing"
   const [openCreate, setOpenCreate] = useState(false);
 
   // demo: no data yet
   const posts = [];
-  const filtered = useMemo(() => posts.filter((p) => p.type === filter), [posts, filter]);
+  const filtered = useMemo(
+    () => posts.filter((p) => p.type === filter),
+    [posts, filter]
+  );
 
   const handleCreateSubmit = (payload) => {
     // TODO: call /api/honey-do on your backend
@@ -18,10 +22,8 @@ export default function Honeydo() {
   };
 
   return (
-    /* Background is scoped to this page ONLY (see honey.css) */
-    <main className="page--honeydo">
+    <main className="page--honeydo" style={{ "--home-bg": `url(${homebg})` }}>
       <div className="page-surface">
-        {/* page hero (title + description + emoji inside <Hero/>) */}
         <Hero />
 
         <div className="honey__grid">
@@ -57,18 +59,18 @@ export default function Honeydo() {
           <section className="honey__feed">
             <nav className="honey__tabs" aria-label="Post filters">
               <button
-                className={`honey__tab ${filter === "wanted" ? "is-active" : ""}`}
-                onClick={() => setFilter("wanted")}
+                className={`honey__tab ${filter === "seeking" ? "is-active" : ""}`}
+                onClick={() => setFilter("seeking")}
                 type="button"
               >
-                Wanted
+                Seeking
               </button>
               <button
-                className={`honey__tab ${filter === "offers" ? "is-active" : ""}`}
-                onClick={() => setFilter("offers")}
+                className={`honey__tab ${filter === "sharing" ? "is-active" : ""}`}
+                onClick={() => setFilter("sharing")}
                 type="button"
               >
-                Offers
+                Sharing
               </button>
             </nav>
 
@@ -88,7 +90,9 @@ export default function Honeydo() {
         open={openCreate}
         onClose={() => setOpenCreate(false)}
         onSubmit={handleCreateSubmit}
-        defaultType={filter === "offers" ? "offer" : "wanted"}
+        category="honey-dos"
+        defaultType={filter} // keep in sync with the active tab
+        heading="Need a hand or have something to offer? POST!"
       />
     </main>
   );
