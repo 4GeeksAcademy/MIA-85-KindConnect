@@ -42,7 +42,7 @@
 
 .cp__note{
   color: var(--muted);
-  font-size: 14px;
+  font-size: 11px;
   margin: 2px 0 8px;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .cp__label{
-  font-weight:700;
+  font-weight:500;
 }
 
 .cp__input,

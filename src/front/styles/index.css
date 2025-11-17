@@ -8,9 +8,10 @@
 @import "./createpost.css";
 
 /* Pages */
-@import "./pages/honeydo.css";
+
 @import "./pages/footer.css";
 @import "./pages/landing.css";
+
 
 .wm {
   display: inline-flex;
@@ -31,4 +32,4 @@
   font-size: 1.25em;
   line-height: 1;
   color: #e11d48;
-} /* big + red */
+} 

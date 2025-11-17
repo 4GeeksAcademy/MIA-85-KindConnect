@@ -1,0 +1,91 @@
+/* Shared styling for static content pages (Terms, About) */
+.page--static,
+.page--terms,
+.page--about {
+  /* soft gradient like your hubs */
+  background: linear-gradient(180deg, #eaf4ff 0%, #f6f9ff 50%, #ffffff 100%);
+  min-height: 100dvh;
+}
+
+.page--static .page-surface,
+.page--terms .page-surface,
+.page--about .page-surface {
+  max-width: min(960px, 92vw);
+  margin: 28px auto;
+  background: #fff;
+  border: 1px solid var(--border, #e6e9ef);
+  border-radius: 20px;
+  padding: clamp(18px, 2.6vw, 28px);
+  box-shadow: 0 12px 30px rgba(2, 48, 71, 0.06);
+}
+
+/* Headings */
+.page-static__title {
+  font-size: clamp(1.8rem, 1.2rem + 2.2vw, 2.6rem);
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: var(--ink, #0f172a);
+}
+
+.page-static__lede {
+  margin: 0 0 20px;
+  color: var(--muted, #5b6472);
+}
+
+/* Article typography */
+.page-static__content {
+  color: var(--ink, #0f172a);
+  line-height: 1.65;
+  font-size: 1rem;
+}
+
+.page-static__content h2 {
+  font-size: clamp(1.25rem, 1rem + 1.2vw, 1.6rem);
+  margin: 22px 0 10px;
+  font-weight: 700;
+}
+
+.page-static__content h3 {
+  font-size: clamp(1.1rem, 0.95rem + 1vw, 1.3rem);
+  margin: 18px 0 8px;
+  font-weight: 700;
+}
+
+.page-static__content p {
+  margin: 10px 0 16px;
+}
+
+.page-static__content ul,
+.page-static__content ol {
+  margin: 8px 0 16px 20px;
+  padding: 0;
+}
+
+.page-static__content li {
+  margin: 6px 0;
+}
+
+.page-static__content a {
+  color: var(--primary, #2563eb);
+  text-decoration: none;
+}
+.page-static__content a:hover {
+  text-decoration: underline;
+}
+
+/* Callouts (optional) */
+.page-callout {
+  background: #f7fbff;
+  border: 1px dashed #cfe3ff;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin: 16px 0;
+  color: #334155;
+}
+
+/* Tiny muted footnote */
+.page-footnote {
+  margin-top: 18px;
+  color: var(--muted, #5b6472);
+  font-size: 0.925rem;
+}

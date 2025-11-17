@@ -1,14 +1,12 @@
 
-.page--honeydo {
- 
-  --bg-base: #989500a2;
-  --bg-accent: #FFE8D6;
+.page--animals {
+  --bg-base: #64c69bf1;
+  --bg-accent: #D3F0E6;
   --primary: #D06E00;
-  --primary-ink: #232101c9;
-  --accent: #FFD2A8;
-  --ink: #030200d2;
-  --muted: #6B554A;
-  --border: #554a00;
+  --accent:  #7ADBC9;
+  --ink: #011612;
+  --muted: #56746D;
+  --border: #2d7961;
 
   position: relative;
   min-height: 100%;
@@ -16,17 +14,18 @@
   background: linear-gradient(180deg, var(--bg-base), var(--bg-accent));
 }
 
-.page--honeydo::before {
+.page--animals::before {
   content: "";
-  position: absolute;  
+  position: absolute;  /* absolute to the page container */
   inset: 0;
   background:
     radial-gradient(transparent 50%, rgba(255,255,255,.65) 100%),
-    var(--home-bg) center / cover no-repeat;
-  opacity: .1;          
+    var(--animals-bg) center / cover no-repeat;
+  opacity: .22;          
   pointer-events: none;
   z-index: 0;
 }
+
 
 .page--food .page-surface {
   position: relative;

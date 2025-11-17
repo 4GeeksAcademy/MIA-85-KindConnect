@@ -71,8 +71,11 @@ def create_post():
     zip_code = (data.get("zip_code") or "").strip() or None
     type = data.get("type", None)
     category = data.get("category", None)
-    if type is None or (type != "needing" and type != "giving"):
-        return jsonify({"error": "either giving or needing is required"}), 400
+
+    # UPDATED: accept seeking/sharing instead of needing/giving
+    if type not in ("seeking", "sharing"):
+        return jsonify({"error": "either seeking or sharing is required"}), 400
+
     if category:
         try:
             category = PostCategory(category)

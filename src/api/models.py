@@ -1,3 +1,5 @@
+import os
+import requests
 from sqlalchemy import UniqueConstraint
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, Boolean, Integer, DateTime, Date
@@ -99,7 +101,8 @@ class Post(db.Model):
     author: str = db.Column(db.String(80), default="anon")
     body: str = db.Column(db.Text, nullable=False)
     media_urls = db.Column(db.JSON, nullable=True)   # list of strings
-    type = db.Column(db.String(10), nullable=False)  # "wanted" | "offer"
+    # UPDATED: type now uses "seeking" | "sharing"
+    type = db.Column(db.String(10), nullable=False)  # "seeking" | "sharing"
     category = db.Column(db.Enum(PostCategory), nullable=False)
     status = db.Column(db.String(12), nullable=False, default="active")
     created_at: datetime = db.Column(db.DateTime, server_default=func.now())
@@ -134,6 +137,7 @@ class Post(db.Model):
         self.lon = lon
         self.type = type
         self.category = category
+        self.media_urls = media_urls
         db.session.add(self)
         db.session.commit()
 
@@ -148,7 +152,7 @@ class Reply(db.Model):
         "post.id"), nullable=False, index=True)
     author: str = db.Column(db.String(80), default="anon")
     body: str = db.Column(db.Text, nullable=False)
-    created_at: datetime = db.Column(db.DateTime, default=datetime)
+    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
 
     def serialize(self):
         return {
@@ -172,7 +176,7 @@ class Favorite(db.Model):
     post_id: int = db.Column(db.Integer, db.ForeignKey(
         "post.id"), nullable=False, index=True)
     device_id: int = db.Column(db.String(120), nullable=False)
-    created_at: datetime = db.Column(db.DateTime, default=datetime)
+    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint(
         "post_id", "device_id", name="uq_post_device"),)
 
