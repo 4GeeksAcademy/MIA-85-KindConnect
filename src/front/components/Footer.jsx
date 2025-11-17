@@ -7,9 +7,12 @@ export default function Footer() {
     <>
       <footer className="kc-footer" role="contentinfo">
         <div className="kc-footer__inner">
-          {/* LEFT: About + Keep in touch + Socials */}
+          {/* LEFT: About + Terms + Keep in touch + Socials */}
           <div className="kc-footer__col">
             <Link to="/about" className="kc-footer__miniLink">About us</Link>
+
+            {/* NEW: Terms & Conditions link */}
+            <Link to="/terms" className="kc-footer__miniLink">Terms &amp; Conditions</Link>
 
             <div className="kc-footer__section">
               <div className="kc-footer__label">Keep in touch</div>

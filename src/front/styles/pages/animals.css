@@ -21,7 +21,7 @@
   background:
     radial-gradient(transparent 50%, rgba(255,255,255,.65) 100%),
     var(--animals-bg) center / cover no-repeat;
-  opacity: .2;          
+  opacity: .22;          
   pointer-events: none;
   z-index: 0;
 }

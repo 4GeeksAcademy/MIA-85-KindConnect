@@ -19,6 +19,7 @@ import { Login } from "./pages/Login";
 import { Profile } from "./pages/Profile";
 import { ResetPassword } from "./pages/ResetPassword";
 import Animals from "./pages/Animals";
+import Terms from "./pages/Terms.jsx";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 
@@ -40,6 +41,7 @@ export const router = createBrowserRouter(
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/Terms" element={<Terms />} />
     </Route>
 
   ), {

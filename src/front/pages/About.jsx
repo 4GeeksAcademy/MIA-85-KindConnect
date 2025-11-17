@@ -1,5 +1,6 @@
 import React from "react";
 import Wordmark from "../components/Wordmark.jsx";
+import "../styles/pages/about.css";
 export default function About() {
   return (
     <main className="layout" style={{ padding: "24px 16px", maxWidth: 820, margin: "0 auto" }}>

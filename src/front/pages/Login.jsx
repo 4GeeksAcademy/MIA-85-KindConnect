@@ -55,7 +55,7 @@ export const Login = () => {
         <div
             className="d-flex justify-content-center align-items-center vh-100 bg-light"
             style={{
-                background: "linear-gradient(135deg, #007bff 0%, #6f42c1 100%)",
+                background: "linear-gradient(100deg, #92c1efff 50%, #9d86c9bc 50%)",
             }}
         >
             <div
@@ -116,7 +116,7 @@ export const Login = () => {
                             type="submit"
                             className="btn btn-primary btn-lg"
                             style={{
-                                backgroundColor: "#007bff",
+                                backgroundColor: "#007bffc6",
                                 border: "none",
                                 transition: "0.3s",
                             }}

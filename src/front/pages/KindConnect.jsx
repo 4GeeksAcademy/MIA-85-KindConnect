@@ -1,27 +1,39 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import CreatePost from "../components/CreatePost.jsx";
 import "../styles/pages/food.css";
-
-// Ensure Vite resolves both assets
 import tacoImg from "../assets/img/taco.jpg";
-import foodBg from "../assets/img/Food_BG.png"; // <-- your Food page BG
+import foodBg from "../assets/img/Food_BG.png";
 
-export default function KindConnect() {
+export default function Food() {
   const [zip, setZip] = useState("");
   const [filter, setFilter] = useState("seeking");   // "seeking" | "sharing"
   const [openCreate, setOpenCreate] = useState(false);
+  const { store, dispatch } = useGlobalReducer();
 
-  // demo: no data yet
-  const posts = [];
-  const filtered = useMemo(() => posts.filter(p => p.type === filter), [posts, filter]);
+  // Only Food posts for the active tab
+  const filtered = useMemo(
+    () => store.posts.filter(p => p.type === filter && p.category === "food"),
+    [store.posts, filter]
+  );
 
-  const handleCreateSubmit = (payload) => {
-    // TODO: hook to backend when ready
-    console.log("new post:", payload);
-  };
+  // Load posts from API
+  const getPosts = useCallback(async () => {
+    try {
+      const res = await fetch(`${store.API_BASE_URL}/api/posts`, {
+        headers: { Authorization: `Bearer ${store.token}` }
+      });
+      if (!res.ok) return;
+      const body = await res.json();
+      dispatch({ type: "set_posts", payload: body });
+    } catch (e) {
+      console.warn("Failed to fetch posts", e);
+    }
+  }, [store.API_BASE_URL, store.token, dispatch]);
+
+  useEffect(() => { getPosts(); }, [getPosts]);
 
   return (
-    // Bind the background via CSS var so bundler always finds it
     <main className="page--food" style={{ "--food-bg": `url(${foodBg})` }}>
       <div className="page-surface">
         {/* Hero */}
@@ -90,7 +102,14 @@ export default function KindConnect() {
             </nav>
 
             <ul className="honey__list" aria-live="polite">
-              {filtered.length === 0 && (
+              {filtered.length > 0 ? (
+                filtered.map((p) => (
+                  <li key={p.id} className="hc">
+                    <strong>{p.title || p.author || "Neighbor"}</strong>
+                    <div style={{ color: "var(--muted)" }}>{p.body}</div>
+                  </li>
+                ))
+              ) : (
                 <li className="honey__empty">
                   No posts yet. Try a different ZIP or create your post.
                 </li>
@@ -104,10 +123,10 @@ export default function KindConnect() {
       <CreatePost
         open={openCreate}
         onClose={() => setOpenCreate(false)}
-        onSubmit={handleCreateSubmit}
-        defaultType={filter}                         // "seeking" | "sharing"
-        category="food"                              // backend Enum: "food"
-        heading="Share a meal or request one? POST!" // Food-specific heading
+        postSubmitFn={getPosts}
+        defaultType={filter}             // "seeking" | "sharing"
+        category="food"                  // backend Enum: "food"
+        heading="Share a meal or request one? POST!"
       />
     </main>
   );

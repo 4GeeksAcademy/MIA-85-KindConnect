@@ -16,6 +16,8 @@ export const Signup = () => {
     const [securityQuestion, setSecurityQuestion] = useState("");
     const [securityAnswer, setSecurityAnswer] = useState("");
 
+    // just added this
+    const [agree, setAgree] = useState(false);
 
     async function signupRequest() {
         try {
@@ -53,7 +55,7 @@ export const Signup = () => {
         <div
             className="d-flex align-items-center justify-content-center vh-100"
             style={{
-                background: "linear-gradient(135deg, #4f46e5, #3b82f6)",
+                background: "linear-gradient(105deg, #8df0b8ff, #eef58aff)",
                 color: "#333",
             }}
         >
@@ -73,6 +75,10 @@ export const Signup = () => {
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
+                        if (!agree) {
+                            setMessage("Please agree to the Terms & Conditions to continue.");
+                            return;
+                        }
                         signupRequest();
                     }}
                 >
@@ -182,6 +188,24 @@ export const Signup = () => {
                         />
                     </div>
 
+                    {/* agree to terms (tiny box) */}
+                    <div className="form-check mb-2">
+                        <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="agreeTerms"
+                            checked={agree}
+                            onChange={(e) => setAgree(e.target.checked)}
+                            required
+                        />
+                        <label className="form-check-label" htmlFor="agreeTerms">
+                            I agree to the{" "}
+                            <Link to="/terms" target="_blank" rel="noopener noreferrer">
+                                Terms &amp; Conditions
+                            </Link>
+                            .
+                        </label>
+                    </div>
 
                     <button
                         type="submit"

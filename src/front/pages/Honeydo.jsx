@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import Hero from "../components/Hero.jsx";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import CreatePost from "../components/CreatePost.jsx";
 import "../styles/pages/honeydo.css";
 import homebg from "../assets/img/home.png";
@@ -8,23 +8,41 @@ export default function Honeydo() {
   const [zip, setZip] = useState("");
   const [filter, setFilter] = useState("seeking"); // "seeking" | "sharing"
   const [openCreate, setOpenCreate] = useState(false);
+  const { store, dispatch } = useGlobalReducer();
 
-  // demo: no data yet
-  const posts = [];
+  // Only Honey-Do posts for the active tab
   const filtered = useMemo(
-    () => posts.filter((p) => p.type === filter),
-    [posts, filter]
+    () => store.posts.filter(p => p.type === filter && p.category === "honey-dos"),
+    [store.posts, filter]
   );
 
-  const handleCreateSubmit = (payload) => {
-    // TODO: call /api/honey-do on your backend
-    console.log("new post:", payload);
-  };
+  // Load posts from API
+  const getPosts = useCallback(async () => {
+    try {
+      const res = await fetch(`${store.API_BASE_URL}/api/posts`, {
+        headers: { Authorization: `Bearer ${store.token}` }
+      });
+      if (!res.ok) return;
+      const body = await res.json();
+      dispatch({ type: "set_posts", payload: body });
+    } catch (e) {
+      console.warn("Failed to fetch posts", e);
+    }
+  }, [store.API_BASE_URL, store.token, dispatch]);
+
+  useEffect(() => { getPosts(); }, [getPosts]);
 
   return (
     <main className="page--honeydo" style={{ "--home-bg": `url(${homebg})` }}>
       <div className="page-surface">
-        <Hero />
+        <header className="honey__hero">
+          <h1 className="honey__title">Honey Do’s</h1>
+          <p className="honey__desc">
+            Home tasks & small fixes — ask for help or offer your skills.
+            <br />
+            Seeking or sharing, neighbors have your back.
+          </p>
+        </header>
 
         <div className="honey__grid">
           {/* LEFT: search + create */}
@@ -75,7 +93,14 @@ export default function Honeydo() {
             </nav>
 
             <ul className="honey__list" aria-live="polite">
-              {filtered.length === 0 && (
+              {filtered.length > 0 ? (
+                filtered.map((p) => (
+                  <li key={p.id} className="hc">
+                    <strong>{p.title || p.author || "Neighbor"}</strong>
+                    <div style={{ color: "var(--muted)" }}>{p.body}</div>
+                  </li>
+                ))
+              ) : (
                 <li className="honey__empty">
                   No posts yet. Try a different ZIP or create your post.
                 </li>
@@ -85,13 +110,13 @@ export default function Honeydo() {
         </div>
       </div>
 
-      {/* simple compose overlay */}
+      {/* Compose overlay */}
       <CreatePost
         open={openCreate}
         onClose={() => setOpenCreate(false)}
-        onSubmit={handleCreateSubmit}
+        postSubmitFn={getPosts}
         category="honey-dos"
-        defaultType={filter} // keep in sync with the active tab
+        defaultType={filter}
         heading="Need a hand or have something to offer? POST!"
       />
     </main>

@@ -4,8 +4,8 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 export default function CreatePost({
   open,
   onClose,
-  onSubmit,                 // optional, some pages use this
-  postSubmitFn,            // optional, other pages use this
+  onSubmit,                
+  postSubmitFn,            
   category,                // "animals" | "food" | "honey-dos"
   defaultType = "seeking", // "seeking" | "sharing"
   heading = "Create a post"
@@ -77,7 +77,7 @@ export default function CreatePost({
     }
   };
 
-  // gentle category-aware placeholders
+ 
   const titlePlaceholder =
     type === "seeking"
       ? (category === "animals"
