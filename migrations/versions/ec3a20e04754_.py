@@ -1,8 +1,8 @@
-"""create post table
+"""empty message
 
-Revision ID: dbc28225b6c7
-Revises: 0763d677d453
-Create Date: 2025-11-05 00:58:27.036404
+Revision ID: ec3a20e04754
+Revises: 
+Create Date: 2025-11-12 01:48:08.993478
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'dbc28225b6c7'
-down_revision = '0763d677d453'
+revision = 'ec3a20e04754'
+down_revision = None
 branch_labels = None
 depends_on = None
 
@@ -24,6 +24,26 @@ def upgrade():
     sa.Column('body', sa.Text(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('user',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('first_name', sa.String(length=50), nullable=False),
+    sa.Column('last_name', sa.String(length=50), nullable=False),
+    sa.Column('username', sa.String(length=50), nullable=False),
+    sa.Column('email', sa.String(length=120), nullable=False),
+    sa.Column('password', sa.String(length=255), nullable=False),
+    sa.Column('phone_number', sa.String(length=20), nullable=True),
+    sa.Column('date_of_birth', sa.Date(), nullable=True),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('is_verified', sa.Boolean(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.Column('security_question', sa.String(length=255), nullable=True),
+    sa.Column('security_answer_hash', sa.String(length=255), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('phone_number'),
+    sa.UniqueConstraint('username')
     )
     op.create_table('favorite',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -62,5 +82,6 @@ def downgrade():
         batch_op.drop_index(batch_op.f('ix_favorite_post_id'))
 
     op.drop_table('favorite')
+    op.drop_table('user')
     op.drop_table('post')
     # ### end Alembic commands ###

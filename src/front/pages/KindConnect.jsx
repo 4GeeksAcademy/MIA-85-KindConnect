@@ -1,199 +1,172 @@
-import { useEffect, useState } from "react";
-import PostFormModal from "../components/PostFormModal.jsx";
-
-let API = `${import.meta.env.VITE_BACKEND_URL}/api`;
+import React, { useState, useEffect } from "react";
+import Taco from "../components/Taco.jsx";
+import CreatePost from "../components/CreatePost.jsx";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import PostCard from "../components/PostCard.jsx";
 
 export default function KindConnect() {
-    const [tab, setTab] = useState("donate");
-    const [q, setQ] = useState("");
-    const [category, setCategory] = useState("");
-    const [posts, setPosts] = useState([]);
-    const [msg, setMsg] = useState("");
-    const [showPostModal, setShowPostModal] = useState(false);
+    const [zip, setZip] = useState("");
+    const [filter, setFilter] = useState(null); // null | "wanted" | "offers"
+    const [openCreate, setOpenCreate] = useState(false);
 
-    const categories = ["Animal", "Food", "Honey Do's"];
+    const { store, dispatch } = useGlobalReducer();
+    const posts = store.posts || [];
 
-    async function loadPosts() {
-        setMsg("");
-        try {
-            const res = await fetch(`${API}/posts`);
-            const data = await res.json();
-            setPosts(Array.isArray(data) ? data : []);
-        } catch {
-            setMsg("Failed to load posts from backend.");
-        }
-    }
-
+    // 1) Load ALL posts once when the page mounts (if we don't already have them)
     useEffect(() => {
-        loadPosts();
-    }, []);
+        const loadAllPosts = async () => {
+            if (posts.length > 0) return; // already have posts
 
-    function handleSearch(e) {
-        e.preventDefault();
-        const term = q.trim().toLowerCase();
-        if (!term) {
-            loadPosts();
+            try {
+                const resp = await fetch(`${store.API_BASE_URL}/api/posts`);
+                if (!resp.ok) {
+                    throw new Error(`Failed to load posts: ${resp.status}`);
+                }
+                const data = await resp.json();
+                dispatch({ type: "set_posts", payload: data });
+            } catch (err) {
+                console.error("Error loading all posts:", err);
+            }
+        };
+
+        loadAllPosts();
+    }, [store.API_BASE_URL, posts.length, dispatch]);
+
+    // 2) "Search" button – in this version, ZIP filtering is local only
+    const handleNearbyPosts = () => {
+        const trimmedZip = zip.trim();
+        if (!trimmedZip) {
+            console.warn("Please enter a ZIP code first.");
             return;
         }
-        setPosts((prev) =>
-            prev.filter((p) => (p.body || "").toLowerCase().includes(term))
-        );
-    }
+        // We don't need to fetch here – filtered list below uses zip from state.
+        // You could set a message if you like.
+        console.log("Filtering food posts by ZIP:", trimmedZip);
+    };
+
+    // 3) Button to clear ZIP and show all food posts again
+    const handleClearZip = () => {
+        setZip("");
+    };
+
+    // 4) Filter posts by:
+    //    - category === "food"
+    //    - type (Wanted / Offers), if selected
+    //    - zip IN THIS CATEGORY ONLY, if zip is set
+    const filtered = posts.filter((p) => {
+        if (p.category !== "food") return false;
+
+        if (filter === "wanted" && p.type !== "needing") return false;
+        if (filter === "offers" && p.type !== "giving") return false;
+
+        const trimmedZip = zip.trim();
+        if (trimmedZip && p.zip_code !== trimmedZip) return false;
+
+        return true;
+    });
 
     return (
-        <div className="min-vh-100 d-flex flex-column">
-            {/* Header */}
-            <header className="border-bottom">
-                <div className="container-fluid py-2">
-                    <h3 className="m-0 fw-bold">
-                        Kind<span style={{ color: "#0d6efd" }}>💙</span>Connect
-                    </h3>
-                </div>
-            </header>
+        <main className="honey layout">
+            <Taco />
 
-            {/* Main layout */}
-            <div className="container-fluid my-3 flex-fill">
-                <div className="row g-3">
-                    {/* Sidebar */}
-                    <aside className="col-12 col-md-2">
+            <div className="honey__grid">
+                {/* LEFT SIDEBAR */}
+                <aside className="honey__side">
+                    <section className="hc hc--zip" aria-labelledby="zipLabel">
+                        <label id="zipLabel" className="hc__label">
+                            Find help near you
+                        </label>
+                        <input
+                            className="hc__input"
+                            placeholder="enter your zipcode"
+                            value={zip}
+                            onChange={(e) => setZip(e.target.value)}
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            aria-describedby="zipHelp"
+                        />
+                        <div className="hc__zipActions">
+                            <button
+                                className="hc__btn"
+                                type="button"
+                                onClick={handleNearbyPosts}
+                            >
+                                See nearby posts
+                            </button>
+                            <button
+                                className="hc__btn hc__btn--secondary"
+                                type="button"
+                                onClick={handleClearZip}
+                            >
+                                Clear ZIP
+                            </button>
+                        </div>
+                    </section>
+
+                    <section className="hc hc--create">
+                        <h2 className="hc__h2">Create your post</h2>
+                        <p className="hc__help">
+                            Need a hand or have something to offer? POST!
+                        </p>
                         <button
-                            className="btn btn-success w-100 mb-3"
-                            onClick={() => {
-                                console.log("open modal"); // 👈 DEBUG LOG (shows in browser console)
-                                setShowPostModal(true);    // 👈 opens the modal
-                            }}
+                            className="hc__btn hc__btn--primary"
+                            type="button"
+                            onClick={() => setOpenCreate(true)}
                         >
-                            Post
+                            Create post
                         </button>
+                    </section>
+                </aside>
 
-                        <div className="border rounded mb-3">
-                            <div className="d-flex align-items-center px-3 py-2 border-bottom">
-                                <span className="me-2">☰</span>
-                                <strong>Filters</strong>
-                            </div>
-                            <div className="list-group list-group-flush">
-                                {categories.map((c) => (
-                                    <button
-                                        key={c}
-                                        type="button"
-                                        className={
-                                            "list-group-item list-group-item-action" +
-                                            (category === c ? " active" : "")
-                                        }
-                                        onClick={() => setCategory(category === c ? "" : c)}
-                                    >
-                                        {c}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </aside>
+                {/* CENTER FEED */}
+                <section className="honey__feed">
+                    <nav className="honey__tabs" aria-label="Post filters">
+                        <button
+                            className={`honey__tab ${filter === "wanted" ? "is-active" : ""}`}
+                            onClick={() => setFilter("wanted")}
+                            type="button"
+                        >
+                            Wanted
+                        </button>
+                        <button
+                            className={`honey__tab ${filter === "offers" ? "is-active" : ""}`}
+                            onClick={() => setFilter("offers")}
+                            type="button"
+                        >
+                            Offers
+                        </button>
+                        <button
+                            className={`honey__tab ${filter === null ? "is-active" : ""}`}
+                            onClick={() => setFilter(null)}
+                            type="button"
+                        >
+                            All
+                        </button>
+                    </nav>
 
-                    {/* Main content */}
-                    <main className="col-12 col-md-8">
-                        {/* Search bar */}
-                        <form className="input-group mb-3" onSubmit={handleSearch}>
-                            <input
-                                id="locationSearch"              // ✅ unique ID
-                                name="locationSearch"            // ✅ name attribute (helps autofill)
-                                type="text"
-                                className="form-control"
-                                placeholder="zip / town / state search"
-                                value={q}
-                                onChange={(e) => setQ(e.target.value)}
-                            />
-                            <button className="btn btn-outline-secondary" type="submit">
-                                Search
-                            </button>
-                        </form>
+                    <ul className="honey__list" aria-live="polite">
+                        {filtered.length === 0 && (
+                            <li className="honey__empty">
+                                No posts yet. Try a different ZIP or create your post.
+                            </li>
+                        )}
 
-                        {/* Donate/Needs toggle */}
-                        <div className="d-flex gap-2 mb-3">
-                            <button
-                                type="button"
-                                className={`btn ${tab === "donate"
-                                    ? "btn-outline-primary active"
-                                    : "btn-outline-primary"
-                                    }`}
-                                onClick={() => setTab("donate")}
-                            >
-                                Donate
-                            </button>
-                            <button
-                                type="button"
-                                className={`btn ${tab === "needs"
-                                    ? "btn-outline-secondary active"
-                                    : "btn-outline-secondary"
-                                    }`}
-                                onClick={() => setTab("needs")}
-                            >
-                                Needs
-                            </button>
-                        </div>
-
-                        {/* Posts feed */}
-                        <div className="border rounded p-3" style={{ minHeight: 320 }}>
-                            {msg && <p className="text-danger">{msg}</p>}
-                            {!msg && posts.length === 0 && (
-                                <p className="text-muted m-0">No posts yet.</p>
-                            )}
-                            <ul className="list-unstyled m-0">
-                                {posts.map((p) => (
-                                    <li
-                                        key={p.id}
-                                        className="border-bottom pb-2 mb-2"
-                                        style={{ lineHeight: 1.3 }}
-                                    >
-                                        <strong>{p.author || "anon"}:</strong> {p.body}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </main>
-
-                    <div className="col-md-2 d-none d-md-block" />
-                </div>
+                        {filtered.map((p) => (
+                            <li key={p.id} className="honey__post">
+                                <PostCard post={p} />
+                            </li>
+                        ))}
+                    </ul>
+                </section>
             </div>
 
-            {/* Footer */}
-            <footer className="border-top">
-                <div className="container py-3 text-center">
-                    <p className="mb-1">
-                        kindconnect@gmail.com
-                        <br />
-                        Facebook: Kind <span style={{ color: "#0d6efd" }}>💙</span>nnect ·
-                        Twitter: Kind <span style={{ color: "#0d6efd" }}>💙</span>nnect ·
-                        Instagram: Kind <span style={{ color: "#0d6efd" }}>💙</span>nnect
-                    </p>
-                    <p className="mb-0">
-                        <strong>contact us</strong> at Ernesto&apos;s house &nbsp;|&nbsp;
-                        <a href="#" className="fw-semibold text-decoration-none">
-                            volunteer
-                        </a>
-                    </p>
-                </div>
-            </footer>
-
-            {/* Modal (outside footer) */}
-            <PostFormModal
-                show={showPostModal}
-                onClose={() => setShowPostModal(false)}
-                onSubmit={async (postData) => {
-                    try {
-                        const r = await fetch(`${API}/posts`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(postData),
-                        });
-                        if (r.ok) {
-                            setShowPostModal(false);
-                            loadPosts(); // refresh posts list
-                        }
-                    } catch (e) {
-                        console.error("Failed to post:", e);
-                    }
-                }}
+            {/* Compose modal – stays on this page */}
+            <CreatePost
+                open={openCreate}
+                onClose={() => setOpenCreate(false)}
+                category="food"
+                postSubmitFn={() => console.log("Created KindConnect post!")}
             />
-        </div>
+        </main>
     );
 }

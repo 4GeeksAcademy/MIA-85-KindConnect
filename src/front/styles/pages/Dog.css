@@ -1,0 +1,32 @@
+.animal__header {
+  text-align: center; /* centers everything */
+  display: flex;
+  flex-direction: column; /* stack title + description */
+  align-items: center;
+  gap: 0.4em; /* space between title and subtitle */
+}
+
+.animal__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em; /* spacing between text and dog */
+  margin: 0; /* remove default h1 margin */
+}
+
+.Animal__subtitle {
+  margin-top: 0; /* reduce vertical spacing */
+  font-size: 1.1rem;
+  line-height: 1.5;
+  max-width: 60ch; /* keeps text from stretching too wide */
+  color: #333;
+}
+.DogEmoji--title {
+  width: 1.9em;
+  height: 1.9em;
+  background-size: cover;
+  background-position: center;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+  transform: translateY(0.05em);
+}

@@ -23,6 +23,14 @@ export default function Food() {
 
     const deviceId = getDeviceId();
 
+    useEffect(() => {
+        console.log("Food mounted, deviceId:", deviceId);
+    }, [deviceId]);
+
+    useEffect(() => {
+        console.log("Food posts updated:", posts);
+    }, [posts]);
+
     async function load() {
         setMsg("");
         try {
@@ -34,7 +42,7 @@ export default function Food() {
         }
     }
 
-    useEffect(() => { load(); }, []);
+    useEffect(() => { load(); }, [deviceId]);
 
     async function shareMeal(e) {
         e.preventDefault();
@@ -75,10 +83,12 @@ export default function Food() {
 
     return (
         <div className="container py-4">
+            <div data-debug="food-mounted" className="small text-muted mb-2">[Food component mounted]</div>
             <h1 className="mb-1">🍽️ Food Feed</h1>
-            <p className="text-muted mb-4">Share meals, comment on dishes, and favorite your faves.</p>
+            <p className="text-muted mb-3">Share meals, comment on dishes, and favorite your faves.</p>
 
             {msg && <div className="alert alert-warning">{msg}</div>}
+
             <form onSubmit={shareMeal} className="card card-body mb-4">
                 <div className="row g-3">
                     <div className="col-md-4">
@@ -117,8 +127,9 @@ export default function Food() {
                                     {p.replies_count ?? (p.replies ? p.replies.length : 0)} comments · {p.favorites_count} favorites
                                 </div>
 
-                                <div className="d-flex gap-2">
+                                <div className="mb-2">
                                     <button
+                                        type="button"
                                         className={`btn ${p.is_favorited ? "btn-outline-danger" : "btn-outline-primary"}`}
                                         onClick={() => toggleFav(p.id)}
                                     >
@@ -135,7 +146,7 @@ export default function Food() {
                                         value={replyText[p.id] || ""}
                                         onChange={(e) => setReplyText(prev => ({ ...prev, [p.id]: e.target.value }))}
                                     />
-                                    <button className="btn btn-secondary" onClick={() => reply(p.id)}>Comment</button>
+                                    <button type="button" className="btn btn-secondary" onClick={() => reply(p.id)}>Comment</button>
                                 </div>
                             </div>
                         </div>

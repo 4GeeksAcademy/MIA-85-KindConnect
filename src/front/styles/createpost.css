@@ -1,0 +1,136 @@
+
+.cp{
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  background: rgba(15,23,42,.45);
+  backdrop-filter: blur(2px);
+}
+
+.cp__panel{
+  width: min(640px, 92%);
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 30px rgba(2,48,71,.18);
+}
+
+.cp__head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:6px;
+}
+
+.cp__title{
+  margin:0;
+  font-size:20px;
+  font-weight:800;
+}
+
+.cp__close{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:8px;
+  padding:6px 10px;
+  cursor:pointer;
+}
+
+.cp__note{
+  color: var(--muted);
+  font-size: 14px;
+  margin: 2px 0 8px;
+}
+
+.cp__form{
+  display:grid;
+  gap:10px;
+}
+
+.cp__label{
+  font-weight:700;
+}
+
+.cp__input,
+.cp__textarea{
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#fff;
+  font:inherit;
+}
+
+.cp__textarea{
+  resize:vertical;
+  min-height: 96px;
+}
+
+.cp__file{
+  padding:8px;
+  border:1px dashed var(--border);
+  border-radius:10px;
+  background:#fafbff;
+}
+
+/* Actions */
+.cp__actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:6px;
+}
+
+.cp__btn{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#fff;
+  cursor:pointer;
+}
+
+.cp__btn--primary{
+  background:var(--primary);
+  border-color:var(--primary);
+  color:var(--primary-ink);
+  font-weight:800;
+}
+
+.cp :where(button,input,textarea):focus-visible{
+  outline: 3px solid color-mix(in oklab, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* Type segmented control */
+.cp__seg{
+  display:inline-flex;
+  border:1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 4px;
+  margin: 2px 0 10px;
+  background:#fff;
+}
+.cp__segBtn{
+  border:0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 700;
+}
+.cp__segBtn.is-active{
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+/* Small screens */
+@media (max-width: 420px){
+  .cp__panel{ padding: 12px }
+  .cp__title{ font-size:18px }
+}

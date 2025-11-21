@@ -12,6 +12,8 @@ body {
     sans-serif;
   color: var(--ink);
   background: var(--surface-2);
+  color: var(--ink);
+  font-family: "Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
   line-height: 1.5;
 }
 

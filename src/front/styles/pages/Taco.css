@@ -1,0 +1,32 @@
+.taco__header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.taco__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  margin: 0;
+}
+
+.taco__subtitle {
+  margin-top: 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  max-width: 60ch;
+  color: #333;
+}
+.TacoEmoji--title {
+  width: 1.9em;
+  height: 1.9em;
+  background-size: cover;
+  background-position: center;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+  transform: translateY(0.05em);
+}
