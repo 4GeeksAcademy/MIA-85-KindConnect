@@ -4,20 +4,24 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from .models import db, User, Post, Reply, Favorite
 from .utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy import select
-from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import joinedload
 from typing import Dict
-
-API_NINJAS_KEY = os.getenv("API_NINJAS_KEY")
-
-api = Blueprint('api', __name__)
-
-# Allow CORS requests to this API
-CORS(api)
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 
 
-@api.route('/hello', methods=['POST', 'GET'])
+api = Blueprint("api", __name__)
+CORS(api)  # Allow CORS requests to this API
+NINJA_API_KEY = os.getenv("NINJA_API_KEY")
+
+
+@api.route("/health", methods=["GET"])
+def health():
+    return jsonify({"ok": True, "service": "kindconnect-api"}), 200
+
+
+@api.route("/hello", methods=["GET", "POST"])
 def handle_hello():
     response_body = {
         "message": "Hello! I'm a message that came from the backend."
@@ -25,34 +29,34 @@ def handle_hello():
     return jsonify(response_body), 200
 
 
-@api.get("/posts")
-def list_posts():
-    device_id = request.args.get("device_id", "")
-    items = Post.query.order_by(Post.created_at.desc()).all()  # type: ignore
-    zip_code = request.args.get("zip_code", "").strip() or None
-    zip_filter = zip_code if zip_code else None
+# @api.get("/posts")
+# def list_posts():
+#     device_id = request.args.get("device_id", "")
+#     items = Post.query.order_by(Post.created_at.desc()).all()  # type: ignore
+#     zip_code = request.args.get("zip_code", "").strip() or None
+#     zip_filter = zip_code if zip_code else None
 
-    q = Post.query
-    if zip_filter:
-        q = q.filter(Post.zip_code == zip_filter)
-    items = q.order_by(Post.created_at.desc()).all()  # type: ignore
-
-    out = []
-    for p in items:
-        fav_count = len(p.favorites)
-        is_fav = False
-        if device_id:
-            is_fav = any(f.device_id == device_id for f in p.favorites)
-        out.append({
-            "id": p.id,
-            "author": p.author,
-            "body": p.body,
-            "created_at": p.created_at.isoformat(),
-            "replies_count": len(p.replies),
-            "favorites_count": fav_count,
-            "is_favorited": is_fav
-        })
-    return jsonify(out), 200
+#     q = Post.query
+#     if zip_filter:
+#         q = q.filter(Post.zip_code == zip_filter)
+#     items = q.order_by(Post.created_at.desc()).all()  # type: ignore
+#     return jsonify([i.serialize() for i in items]), 200
+#     out = []
+#     for p in items:
+#         fav_count = len(p.favorites)
+#         is_fav = False
+#         if device_id:
+#             is_fav = any(f.device_id == device_id for f in p.favorites)
+#         out.append({
+#             "id": p.id,
+#             "author": p.author,
+#             "body": p.body,
+#             "created_at": p.created_at.isoformat(),
+#             "replies_count": len(p.replies),
+#             "favorites_count": fav_count,
+#             "is_favorited": is_fav
+#         })
+#     return jsonify(out), 200
 
 
 @api.post("/posts")
@@ -61,6 +65,16 @@ def create_post():
     body = (data.get("body") or "").strip()
     author = (data.get("author") or "anon").strip() or "anon"
     zip_code = (data.get("zip_code") or "").strip() or None
+    type = data.get("type", None)
+    category = (data.get("category") or "").strip().lower()
+
+    post_type = data.get("type")
+
+    if type is None or (type != "needing" and type != "giving"):
+        return jsonify({"error": "either giving or needing is required"}), 400
+
+    if category not in ["food", "honey-dos", "animals"]:
+        return jsonify({"error": "either food, honey-dos, or animals is required"}), 400
 
     if not body:
         return jsonify({"error": "body required"}), 400
@@ -69,14 +83,74 @@ def create_post():
     if zip_code and not (len(zip_code) == 5 and zip_code.isdigit()):
         return jsonify({"error": "invalid zip format"}), 400
 
-    # external validation with API Ninjas
-    if zip_code and not validate_zip_with_ninjas(zip_code):
-        return jsonify({"error": "zip not found"}), 400
+    if not zip_code:
+        return jsonify({"error": "zip_code required"}), 400
 
-    p = Post(author=author, body=body, zip_code=zip_code)
+    url = f"https://api.api-ninjas.com/v1/zipcode?zip={zip_code}"
+    headers = {"X-Api-Key": NINJA_API_KEY}
+
+    r = requests.get(url, headers=headers)
+    if r.status_code != 200:
+        return jsonify({"error": "ZIP lookup failed"}), 400
+
+    results = r.json()
+    if not results:
+        return jsonify({"error": "invalid zip"}), 400
+
+    lat = results[0]["lat"]
+    lon = results[0]["lon"]
+
+    p = Post(
+        author=author,
+        body=body,
+        zip_code=zip_code,
+        lat=lat,  # type: ignore
+        lon=lon,  # type: ignore
+        category=category,   # string
+        type=post_type,      # "needing" or "giving"
+    )
+
     db.session.add(p)
     db.session.commit()
-    return jsonify({"id": p.id, "zip_code": p.zip_code}), 201
+
+    return jsonify(p.serialize()), 201
+
+
+@api.get("/posts/zip/<zip_code>")
+def get_posts_by_zip(zip_code):
+    device_id = request.args.get("device_id", "")
+
+    query = (
+        Post.query
+        .filter_by(zip_code=zip_code)
+        .order_by(db.desc(Post.created_at))
+        .options(joinedload(Post.replies))
+    )
+
+    posts = query.all()
+
+    out = []
+    for p in posts:
+        fav_count = len(p.favorites)
+        is_fav = False
+        if device_id:
+            is_fav = any(f.device_id == device_id for f in p.favorites)
+        post_data = {
+            "id": p.id,
+            "author": p.author,
+            "body": p.body,
+            "created_at": p.created_at.isoformat(),
+            "zip_code": p.zip_code,
+            "category": p.category,
+            "type": p.type,
+            "replies_count": len(p.replies),
+            "favorites_count": fav_count,
+            "is_favorited": is_fav,
+            "replies": [r.serialize() for r in p.replies] if p.replies else [],
+        }
+        out.append(post_data)
+
+    return jsonify(out), 200
 
 
 @api.get("/posts/<int:pid>")
@@ -137,6 +211,7 @@ def toggle_favorite(pid):
         fav = Favorite(post_id=p.id, device_id=device_id)
         db.session.add(fav)
         db.session.commit()
+        # return proper boolean True and updated favorites count
         return jsonify({"favorited": True, "favorites_count": len(p.favorites)}), 201
 
 
@@ -304,3 +379,41 @@ def update_profile():
 
     db.session.commit()
     return jsonify(user.serialize()), 200
+
+
+@api.route("/posts", methods=["GET"])
+def get_posts():
+    device_id = request.args.get("device_id", "")
+    zip_code = (request.args.get("zip_code", "") or "").strip()
+    zip_filter = zip_code
+
+    query = Post.query.order_by(db.desc(Post.created_at))
+    if zip_filter and zip_filter != "":
+        query = query.filter(Post.zip_code == str(zip_filter))  # type: ignore
+    query = query.options(joinedload(Post.replies))
+
+    posts = query.all()
+
+    out = []
+    for p in posts:
+        fav_count = len(p.favorites)
+        is_fav = False
+        if device_id:
+            is_fav = any(f.device_id == device_id for f in p.favorites)
+
+        post_data = {
+            "id": p.id,
+            "author": p.author,
+            "body": p.body,
+            "created_at": p.created_at.isoformat(),
+            "replies_count": len(p.replies),
+            "favorites_count": fav_count,
+            "is_favorited": is_fav,
+            "zip_code": p.zip_code,
+            "category": p.category,
+            "type": p.type,
+            "replies": [r.serialize() for r in p.replies] if p.replies else [],
+        }
+        out.append(post_data)
+
+    return jsonify(out), 200

@@ -1,7 +1,7 @@
 from sqlalchemy import UniqueConstraint
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, Boolean, Integer, DateTime, Date
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, date as datetime_date
 from typing import List
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -91,10 +91,15 @@ class Post(db.Model):
     author: str = db.Column(db.String(80), default="anon")
     body: str = db.Column(db.Text, nullable=False)
     created_at: datetime = db.Column(db.DateTime, server_default=func.now())
-    zip_code = db.Column(db.String(10), index=True)
-    replies: Mapped[List["Reply"]] = db.relationship(
-        "Reply", backref="post", cascade="all, delete-orphan")  # type: ignore
-    favorites = db.relationship(
+    status: str = db.Column(db.String(20), nullable=False, default="open")
+    type: str = db.Column(db.String(20), nullable=False)
+    zip_code: str = db.Column(db.String(10), index=True)
+    category: str = db.Column(db.String(20), nullable=False)
+    lat = db.Column(db.Float())
+    lon = db.Column(db.Float())
+    replies: Mapped[List["Reply"]] = relationship(
+        "Reply", backref="post", cascade="all, delete-orphan")
+    favorites: Mapped[List["Favorite"]] = relationship(
         "Favorite", backref="post", cascade="all, delete-orphan")
 
     def serialize(self):
@@ -102,14 +107,21 @@ class Post(db.Model):
             "id": self.id,
             "author": self.author,
             "body": self.body,
+            "favorites_count": len(self.favorites),
+            "replies_count": len(self.replies),
+            "status": self.status,
+            "type": self.type,
+            "category": self.category,
             "zip_code": self.zip_code,
             "created_at": self.created_at.isoformat()
         }
 
-    def __init__(self, author, body, zip_code=None):
+    def __init__(self, author, body, zip_code="", type="", category=""):
         self.author = author
         self.body = body
-        self.zip_code = zip_code
+        self.zip_code = zip_code or ""
+        self.type = type or ""
+        self.category = category or ""
         db.session.add(self)
         db.session.commit()
 
@@ -120,15 +132,14 @@ class Reply(db.Model):
         "post.id"), nullable=False, index=True)
     author: str = db.Column(db.String(80), default="anon")
     body: str = db.Column(db.Text, nullable=False)
-    created_at: datetime = db.Column(db.DateTime, default=datetime)
+    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
 
     def serialize(self):
         return {
             "id": self.id,
-            "post_id": self.post_id,
-            "author": self.author,
             "body": self.body,
-            "created_at": self.created_at.isoformat()
+            "author": self.author,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
     def __init__(self, author, body, post_id):
@@ -144,7 +155,7 @@ class Favorite(db.Model):
     post_id: int = db.Column(db.Integer, db.ForeignKey(
         "post.id"), nullable=False, index=True)
     device_id: int = db.Column(db.String(120), nullable=False)
-    created_at: datetime = db.Column(db.DateTime, default=datetime)
+    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint(
         "post_id", "device_id", name="uq_post_device"),)
 

@@ -16,7 +16,13 @@ static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+}, supports_credentials=True)
 app.url_map.strict_slashes = False
 
 # database configuration
@@ -28,7 +34,7 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-MIGRATE = Migrate(app, db, compare_type=True)
+migrate = Migrate(app, db, compare_type=True)
 db.init_app(app)
 
 app.config["JWT_SECRET_KEY"] = os.environ.get("FLASK_APP_KEY", "dev-secret")
@@ -68,4 +74,5 @@ def serve_any_other_file(path):
 
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
-    app.run(host='0.0.0.0', port=PORT, debug=True)
+    # Run without the Flask debugger/reloader in production or when requested
+    app.run(host='0.0.0.0', port=PORT, debug=False)

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // make sure this is set
+import { useNavigate } from "react-router-dom";
 
 export default function CreatePost({
   open,
@@ -9,9 +8,10 @@ export default function CreatePost({
   onSubmit,
   defaultType = "wanted",
 }) {
-  const { store } = useGlobalReducer();
+  const { store, dispatch } = useGlobalReducer();
+  const navigate = useNavigate();
 
-  const [type, setType] = useState(defaultType);
+  const [type, setType] = useState("needing, giving");
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [files, setFiles] = useState([]);
@@ -23,12 +23,11 @@ export default function CreatePost({
   if (!open) return null;
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setError("");
     setIsSubmitting(true);
 
     try {
-      // build what your Flask API expects
       const bodyText = `${title.trim()}\n\n${desc.trim()}`.trim();
       const payload = {
         author:
@@ -38,13 +37,16 @@ export default function CreatePost({
           "anon",
         body: bodyText,
         zip_code: zip.trim(),
-        // backend ignores extra keys, so we can send type if you want later:
-        type,
+        type,         // "needing" or "giving"
+        category      // passed in from page: "animals" | "food" | "honey-dos"
       };
 
       const res = await fetch(`${BACKEND_URL}/api/posts`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${store.token}`
+        },
         body: JSON.stringify(payload),
       });
 
@@ -54,15 +56,25 @@ export default function CreatePost({
         throw new Error(data.error || data.message || "Failed to create post");
       }
 
-      // Let parent know a new post was created (optional)
-      onSubmit?.(data);
+      // 👉 Add new post into global feed (optional but nice UX)
+      dispatch({ type: "add_post", payload: data });
+      dispatch({
+        type: "set_message",
+        payload: "Post created successfully!"
+      });
 
-      // clear form + close
+      // Let parent know, if it passed a callback
+      postSubmitFn && postSubmitFn();
+
+      // Clear form
       setTitle("");
       setDesc("");
       setZip("");
       setFiles([]);
+
+      // Close modal
       onClose?.();
+
     } catch (err) {
       console.error(err);
       setError(err.message || "Something went wrong creating the post");
@@ -108,14 +120,14 @@ export default function CreatePost({
         </div>
 
         <form className="cp__form" onSubmit={handleSubmit}>
-          <label htmlFor="cpTitle" className="cp__label">
+          <label htmlFor="cpTitleInput" className="cp__label">
             Title
           </label>
           <input
-            id="cpTitle"
+            id="cpTitleInput"
             className="cp__input"
             placeholder={
-              type === "wanted"
+              type === "needing"
                 ? "e.g., Need help fixing a leaky faucet"
                 : "e.g., I can fix leaky faucets this weekend"
             }

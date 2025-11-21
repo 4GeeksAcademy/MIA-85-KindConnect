@@ -1,101 +1,201 @@
+import React, { useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
-import { useState, useEffect } from 'react'
+// mascots – paths based on your folder screenshot
+import mascAnimals from "../assets/img/mascot_animals.png";
+import mascFood from "../assets/img/mascot_food.png";
+import mascHoney from "../assets/img/mascot_honeydos.png";
 
-export default function PostCard({ post, onFavorited }) {
-    const [favLoading, setFavLoading] = useState(false)
-    const [showComments, setShowComments] = useState(false)
-    const api = import.meta.env.VITE_API || 'http://localhost:5000/api'
+export default function PostCard({ post }) {
+    const { store } = useGlobalReducer();
 
-    async function favorite() {
+    // Favorite / reply local state
+    const [isFavorited, setIsFavorited] = useState(post.is_favorited || false);
+    const [favoritesCount, setFavoritesCount] = useState(
+        post.favorites_count || 0
+    );
+    const [showReply, setShowReply] = useState(false);
+    const [replyText, setReplyText] = useState("");
+    const [sendingReply, setSendingReply] = useState(false);
+
+    // --- Mascot selection by category ---
+    const categoryKey = (post.category || "").toLowerCase();
+    const mascotMap = {
+        animals: mascAnimals,
+        food: mascFood,
+        "honey-dos": mascHoney,
+        honeydos: mascHoney, // just in case
+    };
+    const mascotImg = mascotMap[categoryKey];
+
+    // remove debug logging in production
+
+    // --- Type pill (Offer / Wanted) ---
+    const isNeeding = post.type === "needing";
+    const typeLabel = isNeeding ? "WANTED" : "OFFER";
+    const typeClass = isNeeding
+        ? "postCard__type postCard__type--needing"
+        : "postCard__type postCard__type--giving";
+
+    const dateText = post.created_at
+        ? new Date(post.created_at).toLocaleDateString()
+        : "";
+
+    // ---- Favorite handler ----
+    const handleFavorite = async () => {
+        // simple device id for favorite tracking
+        let deviceId = localStorage.getItem("kc_device_id");
+        if (!deviceId) {
+            deviceId = crypto.randomUUID();
+            localStorage.setItem("kc_device_id", deviceId);
+        }
+
         try {
-            setFavLoading(true)
-            const res = await fetch(`${api}/projects/${post.id}/favorite`, { method: 'POST' })
-            const data = await res.json()
-            onFavorited?.(post.id, data.favorites_count)
+            const url = `${store.API_BASE_URL}/api/posts/${post.id}/favorite`;
+            console.log("Favorite URL:", url); // debug
+
+            const resp = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ device_id: deviceId }),
+            });
+
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || "Favorite failed");
+
+            setIsFavorited(data.favorited);
+            if (typeof data.favorites_count === "number") {
+                setFavoritesCount(data.favorites_count);
+            }
+        } catch (err) {
+            console.error("Favorite toggle error:", err);
+        }
+    };
+
+    // ---- Reply handler ----
+    const handleReplySubmit = async (e) => {
+        e.preventDefault();
+        const body = replyText.trim();
+        if (!body) return;
+
+        try {
+            setSendingReply(true);
+            const resp = await fetch(
+                `${store.API_BASE_URL}/api/posts/${post.id}/reply`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        body,
+                        author:
+                            store.user?.username ||
+                            store.user?.email ||
+                            "anon",
+                    }),
+                }
+            );
+
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || "Reply failed");
+
+            setReplyText("");
+            setShowReply(false);
+        } catch (err) {
+            console.error("Reply error:", err);
         } finally {
-            setFavLoading(false)
+            setSendingReply(false);
         }
-    }
+    };
 
     return (
-        <div className="card shadow-sm mb-3">
-            <div className="card-body">
-                <div className="d-flex">
-                    <div className="flex-grow-1">
-                        <div className="d-flex justify-content-between align-items-start">
-                            <h6 className="mb-1">{post.title}</h6>
-                            <span className="badge text-bg-secondary">{post.kind}</span>
-                        </div>
-                        <p className="mb-2 small">{post.description}</p>
-                        {post.image_url && (
-                            <div className="mb-2">
-                                <img src={post.image_url} alt="" className="img-fluid rounded" />
-                            </div>
-                        )}
-                        <div className="d-flex gap-3">
-                            <button className="btn btn-sm btn-outline-danger" disabled={favLoading} onClick={favorite}>❤ {post.favorites_count || 0}</button>
-                            <button className="btn btn-sm btn-outline-secondary" onClick={() => setShowComments(v => !v)}>
-                                {showComments ? 'Hide' : 'Comments'}
-                            </button>
-                        </div>
-                        {showComments && <CommentsThread projectId={post.id} />}
-                    </div>
+        <article className="postCard">
+            {/* Top row: author + category + type badge */}
+            <header className="postCard__top">
+                <div>
+                    <h3 className="postCard__author">{post.author || "anon"}</h3>
+                    {post.category && (
+                        <span className="postCard__category">
+                            {post.category.toLowerCase()}
+                        </span>
+                    )}
                 </div>
-            </div>
-        </div>
-    )
-}
 
-function CommentsThread({ projectId }) {
-    const api = import.meta.env.VITE_API || 'http://localhost:5000/api'
-    const [items, setItems] = useState([])
-    const [name, setName] = useState('')
-    const [body, setBody] = useState('')
-    const [loading, setLoading] = useState(true)
+                <span className={typeClass}>{typeLabel}</span>
+            </header>
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const res = await fetch(`${api}/projects/${projectId}/comments`)
-                const data = await res.json()
-                setItems(data)
-            } finally { setLoading(false) }
-        })()
-    }, [projectId])
+            {/* Body text */}
+            <p className="postCard__body">{post.body}</p>
 
-    async function onSubmit(e) {
-        e.preventDefault()
-        if (!name || !body) return
-        const res = await fetch(`${api}/projects/${projectId}/comments`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ author_name: name, body })
-        })
-        if (res.ok) {
-            setBody('')
-            const r2 = await fetch(`${api}/projects/${projectId}/comments`)
-            setItems(await r2.json())
-        }
-    }
+            {/* Footer meta + actions */}
+            <footer className="postCard__footer">
+                <div className="postCard__meta">
+                    {post.zip_code && <>📍 {post.zip_code}</>}
+                    {post.zip_code && dateText && "  •  "}
+                    {dateText && <>📅 {dateText}</>}
+                </div>
 
-    if (loading) return <div className="mt-2 small">Loading comments…</div>
+                <div className="postCard__actions">
+                    <button
+                        type="button"
+                        className={`postCard__favBtn ${isFavorited ? "is-favorited" : ""}`}
+                        onClick={handleToggleFavorite}
+                    >
+                        ♥ Favorite {favoritesCount ? `(${favoritesCount})` : ""}
+                    </button>
 
-    return (
-        <div className="mt-2">
-            <ul className="list-unstyled">
-                {items.map(c => (
-                    <li key={c.id} className="mb-2">
-                        <div className="small"><strong>{c.author_name}</strong> <span className="text-muted">• {new Date(c.created_at).toLocaleString()}</span></div>
-                        <div className="small">{c.body}</div>
-                    </li>
-                ))}
-                {items.length === 0 && <li className="small text-muted">No comments yet.</li>}
-            </ul>
-            <form onSubmit={onSubmit} className="d-flex gap-2">
-                <input className="form-control form-control-sm" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
-                <input className="form-control form-control-sm" placeholder="Write a comment…" value={body} onChange={e => setBody(e.target.value)} />
-                <button className="btn btn-sm btn-primary">Post</button>
-            </form>
-        </div>
-    )
+
+                    <button
+                        type="button"
+                        onClick={() => setShowReply((v) => !v)}
+                    >
+                        💬 Reply
+                    </button>
+                </div>
+            </footer>
+
+            {/* Reply box */}
+            {showReply && (
+                <form
+                    className="postCard__replyForm"
+                    onSubmit={handleReplySubmit}
+                >
+                    <textarea
+                        className="postCard__replyInput"
+                        placeholder="Write a kind reply…"
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                    />
+                    <div className="postCard__replyActions">
+                        <button
+                            type="button"
+                            className="postCard__replyCancel"
+                            onClick={() => setShowReply(false)}
+                            disabled={sendingReply}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="postCard__replySubmit"
+                            disabled={sendingReply}
+                        >
+                            {sendingReply ? "Sending…" : "Send reply"}
+                        </button>
+                    </div>
+                </form>
+            )}
+
+            {/* 🎨 Mascot watermark – always at the end of the article */}
+            {mascotImg ? (
+                <img
+                    src={mascotImg}
+                    alt="mascot"
+                    className="postCard__mascot"
+                />
+            ) : (
+                <div className="postCard__mascot-fallback">🎨</div>
+            )}
+            {/* end */}
+        </article>
+    );
 }

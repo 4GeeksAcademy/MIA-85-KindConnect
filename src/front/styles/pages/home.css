@@ -150,3 +150,300 @@
     grid-template-columns: 1fr;
   }
 }
+/* Feed layout */
+.postList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.postCard > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Postcard look – clean white */
+.postCard {
+  position: relative;
+  background: #ffffff;
+  padding: 1.6rem 1.8rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  overflow: hidden; /* keeps pattern & mascot nicely clipped to rounded corners */
+  min-height: 80px;
+  height: 100%;
+}
+
+/* Pattern panel only on the right portion (not whole card) */
+.postCard::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36%; /* limit to right portion to avoid stripes across card */
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.3; /* subtler so it doesn't create dark lines */
+  background: radial-gradient(
+      circle at 20% 20%,
+      rgba(59, 130, 246, 0.06) 0,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 80% 40%,
+      rgba(251, 191, 36, 0.07) 0,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 50% 80%,
+      rgba(56, 189, 248, 0.07) 0,
+      transparent 55%
+    );
+  background-blend-mode: soft-light;
+  z-index: 0;
+}
+
+/* Hover lift */
+.postCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* Torn / folded top corner */
+.postCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 34px;
+  height: 34px;
+  background: #f3f3f3;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Typography */
+.postCard__author {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #1e1e1e;
+}
+
+.postCard__category {
+  font-size: 0.72rem;
+  background: #fff3a6; /* soft highlighter style */
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #6c5f3e;
+}
+
+.postCard__body {
+  font-size: 1rem;
+  line-height: 1.55;
+  margin-top: 1.2rem;
+  color: #2b2b2b;
+  /* ❌ delete any border-bottom rules here */
+}
+
+/* Footer without horizontal divider */
+.postCard__footer {
+  display: flex;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  padding-top: 0.4rem; /* softer spacing */
+  margin-top: auto;
+}
+
+.postCard__meta {
+  font-size: 0.85rem;
+  color: #616a78;
+}
+
+/* Buttons */
+.postCard__actions {
+  display: flex;
+  gap: 16px;
+}
+
+.postCard__actions button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #444;
+}
+
+.postCard__actions button:hover {
+  text-decoration: underline;
+}
+
+/* ❤️ Favorited state */
+.postCard__favBtn.is-favorited {
+  color: #d02828;
+}
+
+/* Reply Box */
+.postCard__replyForm {
+  margin-top: 12px;
+}
+
+.postCard__replyInput {
+  width: 100%;
+  border: 1px solid #dcdcdc;
+  padding: 8px;
+  border-radius: 6px;
+  resize: vertical;
+  font-size: 0.95rem;
+}
+
+.postCard__replyActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.postCard__replyCancel {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+}
+
+.postCard__replySubmit {
+  background: #2c7ef8;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.postCard__type {
+  font-size: 0.72rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px dashed currentColor;
+  opacity: 0.95;
+  display: inline-block;
+}
+
+/* Offer = green, Wanted = red */
+.postCard__type--giving {
+  color: #198754;
+  background: rgba(25, 135, 84, 0.12);
+  border-color: rgba(25, 135, 84, 0.45);
+}
+
+.postCard__type--needing {
+  color: #c62828;
+  background: rgba(198, 40, 40, 0.12);
+  border-color: rgba(198, 40, 40, 0.45);
+}
+
+/* Mascot always same size & position */
+.postCard__mascot {
+  position: absolute;
+  top: 30%;
+  right: 14px;
+  transform: translateY(-50%);
+  left: 70%;
+  width: 96px;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.8; /* watermark */
+  pointer-events: none;
+  user-select: none;
+  z-index: 0; /* behind replies and card content */
+}
+
+/* If there is no mascot image */
+.postCard__mascot-fallback {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  font-size: 1.25rem;
+  opacity: 0.18;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Kill any borders/lines inside the card */
+.postCard hr {
+  border: 0;
+  height: 0;
+  margin: 0;
+}
+
+/* Just in case any of these had border-top set somewhere */
+.postCard__top,
+.postCard__body,
+.postCard__footer {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+.postCard .post {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+/* Replies: each reply is its own boxed card under the original post */
+.postCard__replies {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* spacing between reply boxes */
+  position: relative;
+  z-index: 4; /* above mascot and decorative panel */
+}
+
+.postCard__reply {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(2, 6, 23, 0.04);
+  align-self: stretch;
+  position: relative;
+  z-index: 5;
+}
+
+/* meta row inside the reply box */
+.postCard__replyMeta {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #374151;
+  margin-bottom: 0.35rem;
+}
+
+/* reply body text */
+.postCard__replyBody {
+  font-size: 0.95rem;
+  color: #0f172a;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+/* small timestamp styling */
+.postCard__replyDate {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+/* responsive tweaks */
+@media (max-width: 640px) {
+  .postCard__reply {
+    padding: 0.6rem 0.75rem;
+  }
+}

@@ -1,29 +1,81 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Taco from "../components/Taco.jsx";
-import CreatePost from "../components/CreatePost.jsx"; // simple post composer overlay
+import CreatePost from "../components/CreatePost.jsx";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import PostCard from "../components/PostCard.jsx";
 
-export default function Food() {
+export default function KindConnect() {
     const [zip, setZip] = useState("");
-    const [filter, setFilter] = useState("wanted");     // "wanted" | "offers"
+    const [filter, setFilter] = useState(null); // null | "wanted" | "offers"
     const [openCreate, setOpenCreate] = useState(false);
 
-    // no data yet
-    const posts = [];
-    const filtered = useMemo(() => posts.filter(p => p.type === filter), [posts, filter]);
+    const { store, dispatch } = useGlobalReducer();
+    const posts = store.posts || [];
 
-    const handleCreateSubmit = (payload) => {
-        // TODO: replace with API call
-        console.log("new post:", payload);
+    // 1) Load ALL posts once when the page mounts (if we don't already have them)
+    useEffect(() => {
+        const loadAllPosts = async () => {
+            if (posts.length > 0) return; // already have posts
+
+            try {
+                const resp = await fetch(`${store.API_BASE_URL}/api/posts`);
+                if (!resp.ok) {
+                    throw new Error(`Failed to load posts: ${resp.status}`);
+                }
+                const data = await resp.json();
+                dispatch({ type: "set_posts", payload: data });
+            } catch (err) {
+                console.error("Error loading all posts:", err);
+            }
+        };
+
+        loadAllPosts();
+    }, [store.API_BASE_URL, posts.length, dispatch]);
+
+    // 2) "Search" button – in this version, ZIP filtering is local only
+    const handleNearbyPosts = () => {
+        const trimmedZip = zip.trim();
+        if (!trimmedZip) {
+            console.warn("Please enter a ZIP code first.");
+            return;
+        }
+        // We don't need to fetch here – filtered list below uses zip from state.
+        // You could set a message if you like.
+        console.log("Filtering food posts by ZIP:", trimmedZip);
     };
+
+    // 3) Button to clear ZIP and show all food posts again
+    const handleClearZip = () => {
+        setZip("");
+    };
+
+    // 4) Filter posts by:
+    //    - category === "food"
+    //    - type (Wanted / Offers), if selected
+    //    - zip IN THIS CATEGORY ONLY, if zip is set
+    const filtered = posts.filter((p) => {
+        if (p.category !== "food") return false;
+
+        if (filter === "wanted" && p.type !== "needing") return false;
+        if (filter === "offers" && p.type !== "giving") return false;
+
+        const trimmedZip = zip.trim();
+        if (trimmedZip && p.zip_code !== trimmedZip) return false;
+
+        return true;
+    });
 
     return (
         <main className="honey layout">
             <Taco />
+
             <div className="honey__grid">
                 {/* LEFT SIDEBAR */}
                 <aside className="honey__side">
                     <section className="hc hc--zip" aria-labelledby="zipLabel">
-                        <label id="zipLabel" className="hc__label">Find help near you</label>
+                        <label id="zipLabel" className="hc__label">
+                            Find help near you
+                        </label>
                         <input
                             className="hc__input"
                             placeholder="enter your zipcode"
@@ -33,12 +85,29 @@ export default function Food() {
                             pattern="[0-9]*"
                             aria-describedby="zipHelp"
                         />
-                        <button className="hc__btn" type="button">See nearby posts</button>
+                        <div className="hc__zipActions">
+                            <button
+                                className="hc__btn"
+                                type="button"
+                                onClick={handleNearbyPosts}
+                            >
+                                See nearby posts
+                            </button>
+                            <button
+                                className="hc__btn hc__btn--secondary"
+                                type="button"
+                                onClick={handleClearZip}
+                            >
+                                Clear ZIP
+                            </button>
+                        </div>
                     </section>
 
                     <section className="hc hc--create">
                         <h2 className="hc__h2">Create your post</h2>
-                        <p className="hc__help">Need a hand or have something to offer? POST!</p>
+                        <p className="hc__help">
+                            Need a hand or have something to offer? POST!
+                        </p>
                         <button
                             className="hc__btn hc__btn--primary"
                             type="button"
@@ -66,6 +135,13 @@ export default function Food() {
                         >
                             Offers
                         </button>
+                        <button
+                            className={`honey__tab ${filter === null ? "is-active" : ""}`}
+                            onClick={() => setFilter(null)}
+                            type="button"
+                        >
+                            All
+                        </button>
                     </nav>
 
                     <ul className="honey__list" aria-live="polite">
@@ -74,15 +150,22 @@ export default function Food() {
                                 No posts yet. Try a different ZIP or create your post.
                             </li>
                         )}
+
+                        {filtered.map((p) => (
+                            <li key={p.id} className="honey__post">
+                                <PostCard post={p} />
+                            </li>
+                        ))}
                     </ul>
                 </section>
             </div>
 
+            {/* Compose modal – stays on this page */}
             <CreatePost
                 open={openCreate}
                 onClose={() => setOpenCreate(false)}
-                onSubmit={handleCreateSubmit}
-                defaultType={filter === "offers" ? "offer" : "wanted"}
+                category="food"
+                postSubmitFn={() => console.log("Created KindConnect post!")}
             />
         </main>
     );
