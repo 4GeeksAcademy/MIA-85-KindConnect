@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+
 export default function Footer() {
   const year = new Date().getFullYear();
   return (
@@ -18,15 +19,20 @@ export default function Footer() {
               </a>
             </div>
 
-            <div className="kc-footer__section" aria-label="Social links">
               <div className="kc-footer__social">
-                <a className="soc soc--fb" href="#" aria-label="Facebook">f</a>
-                <a className="soc soc--x" href="#" aria-label="X / Twitter">x</a>
-                <a className="soc soc--ig" href="#" aria-label="Instagram">ig</a>
-                <a className="soc soc--sc" href="#" aria-label="Snapchat">sc</a>
-                <a className="soc soc--tt" href="#" aria-label="TikTok">tt</a>
-                <a className="soc soc--tg" href="#" aria-label="Telegram">tg</a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-btn ig">I</a>
+
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-btn fb">F</a>
+
+                <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="social-btn x">X</a>
+
+                <a href="https://snapchat.com" target="_blank" rel="noopener noreferrer" className="social-btn sc">S</a>
+
+                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="social-btn tt">T</a>
+
+                <a href="https://web.telegram.org" target="_blank" rel="noopener noreferrer" className="social-btn tg">Tg</a>
               </div>
+
             </div>
           </div>
 
@@ -60,7 +66,6 @@ export default function Footer() {
                 <span>Google Play</span>
               </a>
             </div>
-          </div>
         </div>
       </footer>
 
