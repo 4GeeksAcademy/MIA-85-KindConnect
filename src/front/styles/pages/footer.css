@@ -167,12 +167,12 @@
     grid-template-columns: 1fr;
     text-align: center;
   }
-
-  .kc-footer__col--right {
+  
+.kc-footer__col--right {
     justify-self: center;
-  }
+}
 
-  .stores {
+.stores {
     justify-content: center;
   }
 }

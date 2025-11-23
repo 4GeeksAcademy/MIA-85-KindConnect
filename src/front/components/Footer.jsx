@@ -29,7 +29,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* CENTER COLUMN */}
           <div className="kc-footer__col kc-footer__col--center">
             <div className="kc-footer__label">Address</div>
             <div className="kc-footer__address">1111 Brickell Ave, Miami, FL 33129</div>
@@ -39,7 +38,7 @@ export default function Footer() {
             <div className="kc-footer__label">Get our app</div>
 
             <div className="stores">
-
+   
               <a 
                 href="https://www.apple.com/app-store/"
                 className="storeBadge storeBadge--apple"
@@ -53,7 +52,6 @@ export default function Footer() {
                 <span>App Store</span>
               </a>
 
-              {/* Google Play */}
               <a 
                 href="https://play.google.com/store/apps"
                 className="storeBadge storeBadge--play"
