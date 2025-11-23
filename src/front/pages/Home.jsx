@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import "../styles/pages/home.css";
+import "../styles/home-bg.css";
 import PostCard from "../components/PostCard.jsx";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -85,7 +86,7 @@ export const Home = () => {
   }, [loadAllPosts]);
 
   return (
-    <main className="grid" aria-labelledby="homeTitle">
+    <main className="grid home-bg" aria-labelledby="homeTitle">
       {/* Left column: categories */}
       <aside className="grid__left">
         <section className="cats" aria-labelledby="catsTitle">

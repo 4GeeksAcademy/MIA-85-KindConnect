@@ -1,5 +1,5 @@
 import React from "react";
-import dogImg from "/workspaces/MIA-85-KindConnect/src/front/assets/img/dachshund.jpg";
+import dogImg from "/workspaces/MIA-85-KindConnect/src/front/assets/img/c:d.jpg";
 import "../styles/pages/Dog.css";
 
 export default function Dog() {

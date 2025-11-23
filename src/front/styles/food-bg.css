@@ -1,0 +1,22 @@
+/* Remove honeydo background for food page */
+.honey.layout.food-bg::before {
+  content: "" !important;
+  border: 5px solid red;
+  background: #ffcccc !important;
+  min-height: 100px;
+}
+/* Remove honeydo background for food page */
+.honey.layout.food-bg::before {
+  content: none !important;
+}
+
+main.honey.layout.food-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(transparent 80%, rgba(255, 255, 255, 0.6) 100%),
+    url("/assets/img/veggie.jpg") center/cover no-repeat;
+  opacity: 0.3;
+  pointer-events: none;
+}

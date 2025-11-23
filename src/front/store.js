@@ -4,16 +4,11 @@
 export const initialStore = (initValues = {}) => {
   return {
     API_BASE_URL: import.meta.env.VITE_BACKEND_URL,
-
-    // Auth-related (from boilerplate)
-    token: localStorage.getItem("token") || null,
-    user: JSON.parse(localStorage.getItem("user") || "null"),
-
-    // App-specific
-    message: null, // used by backend connection / ZIP search messages
-    posts: [], // your list of posts
-
-    // Demo todos from boilerplate
+    token: localStorage.getItem("token") || undefined,
+    user: JSON.parse(localStorage.getItem("user")) || null,
+    token: undefined,
+    message: null,
+    posts: [],
     todos: [
       {
         id: 1,

@@ -1,7 +1,7 @@
 """Add type column to Post model
 
 Revision ID: e9e1ff2a2ea8
-Revises: 12926122c326
+Revises: c20f483f29a6
 Create Date: 2025-11-20 22:18:57.020278
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'e9e1ff2a2ea8'
-down_revision = '12926122c326'
+down_revision = 'c20f483f29a6'
 branch_labels = None
 depends_on = None
 

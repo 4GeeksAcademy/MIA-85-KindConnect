@@ -1,15 +1,14 @@
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
+from typing import Dict
+from sqlalchemy.orm import joinedload
 import os
 import requests
 from flask import Flask, request, jsonify, url_for, Blueprint
-from .models import db, User, Post, Reply, Favorite
+from .models import db, User, Post, Reply, Favorite, PostCategory
 from .utils import generate_sitemap, APIException
 from flask_cors import CORS
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
-from typing import Dict
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
-
 
 api = Blueprint("api", __name__)
 CORS(api)  # Allow CORS requests to this API
@@ -24,8 +23,7 @@ def health():
 @api.route("/hello", methods=["GET", "POST"])
 def handle_hello():
     response_body = {
-        "message": "Hello! I'm a message that came from the backend."
-    }
+        "message": "Hello! I'm a message that came from the backend."}
     return jsonify(response_body), 200
 
 
@@ -36,29 +34,30 @@ def handle_hello():
 #     zip_code = request.args.get("zip_code", "").strip() or None
 #     zip_filter = zip_code if zip_code else None
 
-#     q = Post.query
-#     if zip_filter:
-#         q = q.filter(Post.zip_code == zip_filter)
-#     items = q.order_by(Post.created_at.desc()).all()  # type: ignore
-#     return jsonify([i.serialize() for i in items]), 200
-#     out = []
-#     for p in items:
-#         fav_count = len(p.favorites)
-#         is_fav = False
-#         if device_id:
-#             is_fav = any(f.device_id == device_id for f in p.favorites)
-#         out.append({
-#             "id": p.id,
-#             "author": p.author,
-#             "body": p.body,
-#             "created_at": p.created_at.isoformat(),
-#             "replies_count": len(p.replies),
-#             "favorites_count": fav_count,
-#             "is_favorited": is_fav
-#         })
-#     return jsonify(out), 200
+    q = Post.query
+    if zip_filter:
+        q = q.filter(Post.zip_code == zip_filter)
+    items = q.order_by(Post.created_at.desc()).all()  # type: ignore
+    return jsonify([i.serialize() for i in items]), 200
+    out = []
+    for p in items:
+        fav_count = len(p.favorites)
+        is_fav = False
+        if device_id:
+            is_fav = any(f.device_id == device_id for f in p.favorites)
+        out.append({
+            "id": p.id,
+            "author": p.author,
+            "body": p.body,
+            "created_at": p.created_at.isoformat(),
+            "replies_count": len(p.replies),
+            "favorites_count": fav_count,
+            "is_favorited": is_fav
+        })
+    return jsonify(out), 200
 
 
+@jwt_required()
 @api.post("/posts")
 def create_post():
     data = request.get_json() or {}
@@ -66,16 +65,16 @@ def create_post():
     author = (data.get("author") or "anon").strip() or "anon"
     zip_code = (data.get("zip_code") or "").strip() or None
     type = data.get("type", None)
-    category = (data.get("category") or "").strip().lower()
-
-    post_type = data.get("type")
-
+    category = data.get("category", None)
     if type is None or (type != "needing" and type != "giving"):
         return jsonify({"error": "either giving or needing is required"}), 400
-
-    if category not in ["food", "honey-dos", "animals"]:
+    if category:
+        try:
+            category = PostCategory(category)
+        except ValueError as error:
+            category = None
+    if category is None:
         return jsonify({"error": "either food, honey-dos, or animals is required"}), 400
-
     if not body:
         return jsonify({"error": "body required"}), 400
 
@@ -107,7 +106,7 @@ def create_post():
         lat=lat,  # type: ignore
         lon=lon,  # type: ignore
         category=category,   # string
-        type=post_type,      # "needing" or "giving"
+        type=type,      # "needing" or "giving"
     )
 
     db.session.add(p)
@@ -232,31 +231,38 @@ def handle_signup():
     if not date_of_birth:
         date_of_birth = None
 
-    if not all([first_name, last_name, username, email, password, security_question, security_answer]):
+    if not all(
+        [
+            first_name,
+            last_name,
+            username,
+            email,
+            password,
+            security_question,
+            security_answer,
+        ]
+    ):
         return jsonify({"message": "Missing required fields..."}), 400
 
-    # Check for existing user
+    # Check for existing user by email OR username
     existing_user = db.session.scalars(
         select(User).where((User.email == email) | (User.username == username))
     ).one_or_none()
     if existing_user:
         return jsonify({"message": "User with this email or username already exists..."}), 400
 
-    hashed_password = generate_password_hash(password)
-
     new_user = User(
         first_name=first_name,
         last_name=last_name,
         username=username,
         email=email,
-        password=hashed_password,
+        password=password,
         phone_number=phone_number,
         date_of_birth=date_of_birth,
         is_active=True,
         is_verified=False,
-        security_question=security_question
+        security_question=security_question,
     )
-
     new_user.set_password(password)
     new_user.set_security_answer(security_answer)
 
@@ -266,9 +272,9 @@ def handle_signup():
     return jsonify({"message": "User created successfully!"}), 201
 
 
-@api.route('/resetPassword/question', methods=['POST'])
+@api.route("/resetPassword/question", methods=["POST"])
 def getSecurityQuestion():
-    body = request.json or {}
+    body = request.get_json() or {}
     email = body.get("email")
 
     user = db.session.scalars(select(User).where(
@@ -279,12 +285,14 @@ def getSecurityQuestion():
     return jsonify({"security_question": user.security_question}), 200
 
 
-@api.route('/resetPassword/verify', methods=['POST'])
+@api.route("/resetPassword/verify", methods=["POST"])
 def verifyResetPassword():
-    body = request.json or {}
+    body = request.get_json() or {}
     email = body.get("email")
     answer = body.get("security_answer")
     new_password = body.get("new_password")
+    if not new_password:
+        return jsonify({"message": "Missing required fields"}), 400
 
     if not all([email, answer, new_password]):
         return jsonify({"message": "Missing required fields"}), 400
@@ -303,7 +311,7 @@ def verifyResetPassword():
     return jsonify({"message": "Password reset successfully!"}), 200
 
 
-@api.route('/login', methods=['POST'])
+@api.route("/login", methods=["POST"])
 def handle_login():
     body = request.json or {}
     email = body.get("email")
@@ -323,16 +331,14 @@ def handle_login():
     user_token = create_access_token(identity=str(user.id))
     response_body = {
         "token": user_token,
-        "user": user.serialize() if hasattr(user, "serialize") else {
-            "id": user.id,
-            "email": user.email,
-            "username": user.username
-        }
+        "user": user.serialize()
+        if hasattr(user, "serialize")
+        else {"id": user.id, "email": user.email, "username": user.username},
     }
     return jsonify(response_body), 201
 
 
-@api.route('/users', methods=['GET'])
+@api.route("/users", methods=["GET"])
 def get_all_users():
     users = db.session.scalars(select(User)).all()
     if not users:
@@ -342,10 +348,9 @@ def get_all_users():
     return jsonify(users_list), 200
 
 
-@api.route('/profile', methods=['GET'])
+@api.route("/profile", methods=["GET"])
 @jwt_required()
 def get_profile():
-    from flask_jwt_extended import get_jwt_identity
     user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
     if not user:
@@ -353,7 +358,7 @@ def get_profile():
     return jsonify(user.serialize()), 200
 
 
-@api.route('/profile', methods=['PUT'])
+@api.route("/profile", methods=["PUT"])
 @jwt_required()
 def update_profile():
     user_id = get_jwt_identity()

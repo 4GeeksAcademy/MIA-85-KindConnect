@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "../styles/animals-bg.css";
 import Dog from "../components/Dog.jsx";
 import CreatePost from "../components/CreatePost.jsx";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
@@ -50,11 +51,11 @@ export default function Animals() {
   };
 
   // 4) Filter posts by:
-  //    - category === "food"
+  //    - category === "animal"
   //    - type (Wanted / Offers), if selected
   //    - zip IN THIS CATEGORY ONLY, if zip is set
   const filtered = posts.filter((p) => {
-    if (p.category !== "animals") return false;
+    if (p.category !== "animal") return false;
 
     if (filter === "wanted" && p.type !== "needing") return false;
     if (filter === "offers" && p.type !== "giving") return false;
@@ -66,7 +67,7 @@ export default function Animals() {
   });
 
   return (
-    <main className="honey layout">
+    <main className="honey layout animals-bg">
       <Dog />
 
       <div className="honey__grid">
@@ -122,15 +123,15 @@ export default function Animals() {
         <section className="honey__feed">
           <nav className="honey__tabs" aria-label="Post filters">
             <button
-              className={`honey__tab ${filter === "wanted" ? "is-active" : ""}`}
-              onClick={() => setFilter("wanted")}
+              className={`honey__tab ${filter === "needing" ? "is-active" : ""}`}
+              onClick={() => setFilter("needing")}
               type="button"
             >
               Wanted
             </button>
             <button
-              className={`honey__tab ${filter === "offers" ? "is-active" : ""}`}
-              onClick={() => setFilter("offers")}
+              className={`honey__tab ${filter === "giving" ? "is-active" : ""}`}
+              onClick={() => setFilter("giving")}
               type="button"
             >
               Offers
@@ -145,7 +146,16 @@ export default function Animals() {
           </nav>
 
           <ul className="honey__list" aria-live="polite">
-            {filtered.length === 0 && (
+            <li>{filtered.length}</li>
+            {filtered.length > 0 ? (
+              <>
+                {filtered.map((_post) => {
+                  return (
+                    <li key={_post.id}>{_post.body}</li>
+                  )
+                })}
+              </>
+            ) : (
               <li className="honey__empty">
                 No posts yet. Try a different ZIP or create your post.
               </li>

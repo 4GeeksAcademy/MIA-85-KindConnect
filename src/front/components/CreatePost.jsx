@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useNavigate } from "react-router-dom";
 
 export default function CreatePost({
   open,
   onClose,
-  onSubmit,
-  defaultType = "wanted",
+  postSubmitFn,
+  category
 }) {
-  const { store, dispatch } = useGlobalReducer();
-  const navigate = useNavigate();
-
-  const [type, setType] = useState("needing, giving");
+  const { store } = useGlobalReducer();
+  const [type, setType] = useState("needing");
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [files, setFiles] = useState([]);
@@ -19,7 +16,6 @@ export default function CreatePost({
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => setType(defaultType), [defaultType]);
   if (!open) return null;
 
   const handleSubmit = async (e) => {
@@ -37,15 +33,16 @@ export default function CreatePost({
           "anon",
         body: bodyText,
         zip_code: zip.trim(),
-        type,         // "needing" or "giving"
-        category      // passed in from page: "animals" | "food" | "honey-dos"
+        // backend ignores extra keys, so we can send type if you want later:
+        type,
+        category
       };
 
-      const res = await fetch(`${BACKEND_URL}/api/posts`, {
+      const res = await fetch(`${store.API_BASE_URL}/api/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${store.token}`
+          "Authorization": `Bearer ${store.token}`
         },
         body: JSON.stringify(payload),
       });
@@ -105,15 +102,15 @@ export default function CreatePost({
         <div className="cp__seg" role="group" aria-label="Post type">
           <button
             type="button"
-            className={`cp__segBtn ${type === "wanted" ? "is-active" : ""}`}
-            onClick={() => setType("wanted")}
+            className={`cp__segBtn ${type === "needing" ? "is-active" : ""}`}
+            onClick={() => setType("needing")}
           >
             Wanted
           </button>
           <button
             type="button"
-            className={`cp__segBtn ${type === "offer" ? "is-active" : ""}`}
-            onClick={() => setType("offer")}
+            className={`cp__segBtn ${type === "giving" ? "is-active" : ""}`}
+            onClick={() => setType("giving")}
           >
             Offer
           </button>
@@ -186,7 +183,8 @@ export default function CreatePost({
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               className="cp__btn cp__btn--primary"
               disabled={isSubmitting}
             >
