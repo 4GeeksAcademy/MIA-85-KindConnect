@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import Wordmark from "../components/Wordmark.jsx";
 export default function Landing() {
   return (
     <main className="layout" style={{ padding: "32px 16px" }}>
       <section style={{ maxWidth: 840, margin: "0 auto", textAlign: "center" }}>
-        <h1 style={{ fontWeight: 800, margin: 0 }}>Welcome to KindConnect</h1>
+        <h1 style={{ fontWeight: 800, margin: 0 }}>Welcome to <Wordmark /></h1>
         <p style={{ color: "var(--muted)", margin: "8px 0 20px" }}>
-          Neighbors helping neighbors — find help or offer help in minutes.
+          Neighbors helping neighbors. Ask freely. Help gladly.
         </p>
 
         {/* Quick category tiles */}

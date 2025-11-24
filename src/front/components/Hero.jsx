@@ -1,4 +1,5 @@
 import React from "react";
+import Wordmark from "../components/Wordmark.jsx";
 import toolImg from "/workspaces/MIA-85-KindConnect/src/front/assets/img/tool.jpg";
 import "../styles/hero.css";
 

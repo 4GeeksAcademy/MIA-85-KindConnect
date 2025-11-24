@@ -1,0 +1,11 @@
+/* KindConnect page background */
+.honey.layout.kindconnect-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(transparent 80%, rgba(255, 255, 255, 0.6) 100%),
+    url("/assets/img/veg.jpg") center/cover no-repeat;
+  opacity: 0.3;
+  pointer-events: none;
+}

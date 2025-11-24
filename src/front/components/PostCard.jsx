@@ -27,6 +27,7 @@ export default function PostCard({ post }) {
     // Mascot selection by category (watermark)
     const categoryKey = (post.category || "").toLowerCase();
     const mascotMap = {
+        animal: mascAnimals,
         animals: mascAnimals,
         food: mascFood,
         "honey-dos": mascHoney,

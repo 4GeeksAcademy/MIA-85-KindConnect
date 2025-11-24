@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: ec3a20e04754
+Revision ID: c20f483f29a6
 Revises: 
-Create Date: 2025-11-12 01:48:08.993478
+Create Date: 2025-11-14 01:35:44.610508
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ec3a20e04754'
+revision = 'c20f483f29a6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,9 +22,19 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('author', sa.String(length=80), nullable=True),
     sa.Column('body', sa.Text(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('media_urls', sa.JSON(), nullable=True),
+    sa.Column('type', sa.String(length=10), nullable=False),
+    sa.Column('category', sa.Enum('FOOD_DONATIONS', 'ANIMAL_SHELTER', 'HONEY_DOS', name='postcategory'), nullable=False),
+    sa.Column('status', sa.String(length=12), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
+    sa.Column('zip_code', sa.String(length=10), nullable=True),
+    sa.Column('lat', sa.Float(), nullable=True),
+    sa.Column('lon', sa.Float(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    with op.batch_alter_table('post', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_post_zip_code'), ['zip_code'], unique=False)
+
     op.create_table('user',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('first_name', sa.String(length=50), nullable=False),
@@ -83,5 +93,8 @@ def downgrade():
 
     op.drop_table('favorite')
     op.drop_table('user')
+    with op.batch_alter_table('post', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_post_zip_code'))
+
     op.drop_table('post')
     # ### end Alembic commands ###

@@ -3,6 +3,7 @@ import Taco from "../components/Taco.jsx";
 import CreatePost from "../components/CreatePost.jsx";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import PostCard from "../components/PostCard.jsx";
+import "../styles/kindconnect-bg.css";
 
 export default function KindConnect() {
     const [zip, setZip] = useState("");
@@ -66,7 +67,8 @@ export default function KindConnect() {
     });
 
     return (
-        <main className="honey layout">
+        <main className="honey layout kindconnect-bg">
+            {/* TODO: Add KindConnect background CSS override */}
             <Taco />
 
             <div className="honey__grid">

@@ -67,9 +67,11 @@ export default function Honeydo() {
 
   return (
     <main className="honey layout">
+      {/* page hero (title + description + emoji inside <Hero/>) */}
       <Hero />
+
       <div className="honey__grid">
-        {/* LEFT SIDEBAR */}
+        {/* LEFT: search + create */}
         <aside className="honey__side">
           <section className="hc hc--zip" aria-labelledby="zipLabel">
             <label id="zipLabel" className="hc__label">
@@ -82,7 +84,6 @@ export default function Honeydo() {
               onChange={(e) => setZip(e.target.value)}
               inputMode="numeric"
               pattern="[0-9]*"
-              aria-describedby="zipHelp"
             />
             <div className="hc__zipActions">
               <button
@@ -117,7 +118,7 @@ export default function Honeydo() {
           </section>
         </aside>
 
-        {/* CENTER FEED */}
+        {/* CENTER: feed */}
         <section className="honey__feed">
           <nav className="honey__tabs" aria-label="Post filters">
             <button

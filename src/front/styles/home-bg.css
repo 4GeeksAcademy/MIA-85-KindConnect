@@ -1,0 +1,19 @@
+/* Home page background with nice.jpg */
+.grid.home-bg {
+  position: relative;
+  z-index: 0;
+  min-height: 100%;
+  background: transparent;
+}
+
+.grid.home-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(transparent 80%, rgba(255, 255, 255, 0.6) 100%),
+    url("/assets/img/nice.jpg") repeat;
+  background-size: 300px 300px;
+  opacity: 0.3;
+  pointer-events: none;
+}
