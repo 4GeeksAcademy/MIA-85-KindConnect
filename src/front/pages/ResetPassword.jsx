@@ -16,7 +16,7 @@ export const ResetPassword = () => {
     setMessage("");
     setSecurityQuestion("");
     try {
-      const response = await fetch(`${store.API_BASE_URL}/api/resetPassword/question`, {
+      const response = await fetch(`${store.API_BASE_URL}/api/reset-password/question`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -36,7 +36,7 @@ export const ResetPassword = () => {
   async function resetPassword() {
     setMessage("");
     try {
-      const response = await fetch(`${store.API_BASE_URL}/api/resetPassword/verify`, {
+      const response = await fetch(`${store.API_BASE_URL}/api/reset-password/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

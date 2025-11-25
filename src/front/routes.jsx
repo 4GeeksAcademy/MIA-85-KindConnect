@@ -31,6 +31,7 @@ export const router = createBrowserRouter(
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route path="/" element={<Home />} />
       <Route path="/landing" element={<Landing />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/food" element={<KindConnect />} />
       <Route path="/kindconnect" element={<KindConnect />} />
       <Route path="/postformmodal" element={<PostFormModal />} />

@@ -272,7 +272,7 @@ def handle_signup():
     return jsonify({"message": "User created successfully!"}), 201
 
 
-@api.route("/resetPassword/question", methods=["POST"])
+@api.route("/reset-password/question", methods=["POST"])
 def getSecurityQuestion():
     body = request.get_json() or {}
     email = body.get("email")
@@ -285,7 +285,7 @@ def getSecurityQuestion():
     return jsonify({"security_question": user.security_question}), 200
 
 
-@api.route("/resetPassword/verify", methods=["POST"])
+@api.route("/reset-password/verify", methods=["POST"])
 def verifyResetPassword():
     body = request.get_json() or {}
     email = body.get("email")

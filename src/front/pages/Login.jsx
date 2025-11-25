@@ -143,7 +143,7 @@ export const Login = () => {
                 </div>
 
                 <div className="text-center mt-3">
-                    <Link to="/resetPassword" className="fw-semibold text-decoration-none">
+                    <Link to="/reset-password" className="fw-semibold text-decoration-none">
                         Forgot your password?
                     </Link>
                 </div>
