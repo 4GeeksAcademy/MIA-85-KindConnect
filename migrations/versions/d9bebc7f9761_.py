@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: c20f483f29a6
+Revision ID: d9bebc7f9761
 Revises: 
-Create Date: 2025-11-14 01:35:44.610508
+Create Date: 2025-11-25 01:14:21.375868
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c20f483f29a6'
+revision = 'd9bebc7f9761'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,11 +23,11 @@ def upgrade():
     sa.Column('author', sa.String(length=80), nullable=True),
     sa.Column('body', sa.Text(), nullable=False),
     sa.Column('media_urls', sa.JSON(), nullable=True),
-    sa.Column('type', sa.String(length=10), nullable=False),
-    sa.Column('category', sa.Enum('FOOD_DONATIONS', 'ANIMAL_SHELTER', 'HONEY_DOS', name='postcategory'), nullable=False),
-    sa.Column('status', sa.String(length=12), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=False),
+    sa.Column('type', sa.String(length=20), nullable=False),
     sa.Column('zip_code', sa.String(length=10), nullable=True),
+    sa.Column('category', sa.String(length=20), nullable=False),
     sa.Column('lat', sa.Float(), nullable=True),
     sa.Column('lon', sa.Float(), nullable=True),
     sa.PrimaryKeyConstraint('id')

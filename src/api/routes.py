@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 import os
 import requests
 from flask import Flask, request, jsonify, url_for, Blueprint
-from .models import db, User, Post, Reply, Favorite, PostCategory
+from .models import db, User, Post, Reply, Favorite
 from .utils import generate_sitemap, APIException
 from flask_cors import CORS
 from sqlalchemy import select
@@ -68,11 +68,6 @@ def create_post():
     category = data.get("category", None)
     if type is None or (type != "needing" and type != "giving"):
         return jsonify({"error": "either giving or needing is required"}), 400
-    if category:
-        try:
-            category = PostCategory(category)
-        except ValueError as error:
-            category = None
     if category is None:
         return jsonify({"error": "either food, honey-dos, or animals is required"}), 400
     if not body:

@@ -88,20 +88,12 @@ class User(db.Model):
         db.session.commit()
 
 
-class PostCategory(Enum):
-    FOOD_DONATIONS = "food"
-    ANIMAL_SHELTER = "animals"
-    HONEY_DOS = "honey-dos"
-
-
 class Post(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     author: str = db.Column(db.String(80), default="anon")
     body: str = db.Column(db.Text, nullable=False)
     media_urls = db.Column(db.JSON, nullable=True)   # list of strings
     type = db.Column(db.String(10), nullable=False)  # "wanted" | "offer"
-    category = db.Column(db.Enum(PostCategory), nullable=False)
-    status = db.Column(db.String(12), nullable=False, default="active")
     created_at: datetime = db.Column(db.DateTime, server_default=func.now())
     status: str = db.Column(db.String(20), nullable=False, default="open")
     type: str = db.Column(db.String(20), nullable=False)
@@ -123,11 +115,10 @@ class Post(db.Model):
             "replies_count": len(self.replies),
             "status": self.status,
             "type": self.type,
-            "category": self.category,
             "zip_code": self.zip_code,
             "lat": self.lat,
             "lon": self.lon,
-            "category": self.category.value,
+            "category": self.category,
             "type": self.type,
             "created_at": self.created_at.isoformat()
         }
