@@ -138,6 +138,7 @@
   z-index: 1;
   pointer-events: auto;
   color: inherit;
+  display: none;
 }
 
 .nav {

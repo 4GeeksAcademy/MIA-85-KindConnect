@@ -40,7 +40,7 @@ export const Navbar = () => {
 				{/* CENTER: KindC❤️nnect — perfectly centered */}
 				<Link
 					to="/"
-					className="brand-center text-decoration-none fw-bold"
+					className="brand-center text-decoration-none fw-bold d-md-block"
 					aria-label="KindConnect"
 				>
 					<span className="wm">

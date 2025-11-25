@@ -60,6 +60,8 @@ export const Signup = () => {
             <div
                 className="card shadow-lg p-4"
                 style={{
+                    height: "80%",
+                    overflowY: "scroll",
                     maxWidth: "500px",
                     width: "100%",
                     borderRadius: "15px",
